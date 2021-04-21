@@ -1,0 +1,445 @@
+<html>
+<head>
+<style>
+.entry {
+    display:block;
+    width:600px;
+    text-align:left;
+    margin-top:16px;
+}
+.entrytitle {
+font-weight:bold;
+text-decoration:underline;
+}
+.index {
+margin-left:30px;
+margin-bottom:5px;
+}
+/* these define the banner at the top of the site */
+.banner {
+    background-color:#404040;
+    height:64px;
+    text-align:right;
+    margin-top:0px;
+    margin-left:0px;
+    margin-right:0px;
+    margin-bottom:16px;
+    padding:0px;
+    border-style:none;
+}
+.bannerleft {
+    position:absolute;
+    left:30px;
+    top:20px;
+    color:white;
+    text-decoration: none;
+    font-weight:900;
+    font-size:150%;
+}
+.note {
+	color:blue;
+	margin-left:30px;
+}
+.agscript {
+	font-family: monospace;
+    white-space: pre;
+	background-color:#FFFFCC;
+}
+.italheader {
+	font-style:italic;
+	font-size:14px;
+	text-decoration: underline;
+}
+.text80 {
+	padding-left:30px;
+}
+img {
+	border:1px solid gray;
+}
+	
+
+</style>
+</head>
+<body style="font-family:Sans-Serif;">
+
+<!-- start banner ************************************************* -->
+<div id="sitebanner" class="banner">
+
+<div class="bannerleft">
+comiola faq
+</div>
+
+</div>
+<!-- end banner ************************************************* -->
+
+<h4> Getting started </h4> 
+
+<div class="index">
+<a href="#tutorial"> Comiola Tutorials</a>
+</div>
+
+<div class="index">
+<a href="#upload">How do I upload my novel/short story/screenplay?</a>
+</div>
+
+<hr>
+
+<div id="tutorial" class="entry">
+<div class="entrytitle">
+Comiola Tutorial: Shots and Camera
+</div>
+
+<p>
+Let's start by making a very simple 4-shot movie. First, create an empty 
+folder for your project. Then right-click on the image below and save it in
+the folder. The file name is "queenofnight.jpg".
+<p>
+<img src="queenofnight.jpg" width="270" height="248">
+</p>
+
+To create the new project, click the File button in the upper left corner
+of the editor. The file drop pane will appear.
+<p>
+<img src="filedropdown.jpg">
+</p>
+Enter a name for your project ("MyProject"), then click New. The Select Folder
+dialog appears: select the folder you created earlier. Comiola will create 
+a new (empty) project. The display next to the file button changes to
+<p>
+<img src="projdir.jpg">
+</p>
+The project file is named "MyProject.cprj" 
+(all project files end with ".cprj").
+To reopen this project after you've exited Comiloa, 
+click File/Open and select that file from the File open dialog.
+<p>
+To add the first shot, click the "Add Shots" button in the editor control 
+panel.
+<p>
+<img src="addshots.jpg">
+</p>
+In the File Select dialog, go to the project directory and select 
+"queenofnight.jpg". The editor displays the first shot. Notice there's
+a small green square in the center, and a green triangle off to the right.
+These represent the camera. Click and drag the triangle towards the square,
+reducing the size of the enclosing green rectangle -- 
+we're bringing the camera in for a closeup.
+Click on the green square (it turns into a circle to show the camera
+has been selected), and drag the camera so it's centered on the
+sphinx. Fiddle with the camera controls until you get something like this:
+<p>
+<img src="addshots1.jpg">
+</p>
+
+What's this shot actually look like? Here's another look at the control 
+panel of the editor. 
+<p>
+<img src="addshots2.jpg">
+</p>
+             
+Click the "Play this Shot" button. You'll see a 2-second shot of the
+sphinx. Not very interesting, so let's add a second shot.
+In the editor control panel, click the "Clone Shot" button: 
+<p>
+<img src="addshots3.jpg">
+</p>
+
+We're now on the second. Move and resize the camera so it looks like
+this.
+
+<p>
+<img src="addshots4.jpg">
+</p>
+
+Click the Clone Shot button again, and move the camera down to the birds:
+
+<p>
+<img src="addshots5.jpg">
+</p>
+
+So far we've created a 3-shot sequence. To see what it looks like,
+click the Play All button.
+<p>
+<img src="playall.jpg">
+</p>
+
+These shots are all static. Let's make a 
+shot which animates the camera. First click the Clone Shot button,
+taking us to the next shot. Click the center green square
+of the camera: it turns into a circle, indicating its selected.
+On the top control bar, click the "Pt: Add" button. 
+<p>
+<img src="ptadd.jpg">
+</p>
+
+<p>
+This adds a second point to the camera path, creating an animation. 
+Use the move/resize handles of the second point so that the camera 
+boxes look something like this:
+<p>
+<p>
+<img src="addshots6.jpg">
+</p>
+
+<p>
+The second camera surrounds the first, so this will be zoom-out.
+Click Play This Shot to see the effect.
+<p>
+Let's turn the shot into a zoom-out followed by a pan. Click the
+Pt: Add button to add a third point to the animation path, then
+use the move/resize handles of the third camera so the whole thing
+looks like this.
+<p>
+<img src="addshots7.jpg">
+</p>
+Click Play this Shot to see how the zoom+pans works. It
+might work better if the camera lingered a bit at the
+end of the shot, so the viewer can look a bit longer at the
+queen's face. In the top control bar, find the boxes labled 
+"tS" and "tE" (these mean "time-Start" and "time-End".
+Click on any point in the camera animation to
+select that animation's path, and note that tS is "0.0" and 
+tE is "1.0". 
+<p>
+<img src="tStE.jpg">
+</p>
+"tS = 0.0" means: start the animation at the start of the shot.
+If we wanted the animation to start when 1/4 of the time
+allocated to the shot has passed, we'd set this value to ".25".
+In this case we want the animation to start when the shot begins,
+so we'll leave tS at 0.0
+<p>
+"tE = 1.0" means: complete the animation when the shot ends. To 
+make the camera linger a bit at the end of the shot, change tE
+to ".75". That means: time the animation so that it's complete,
+3/4 thru the time allocated to the shot. That will give the effect 
+we're after. So change tS to ".75", click Play The Check, and verify
+that it all works the way it's supposed to.
+<p>
+To see what we've accomplished so far, click the Play All button 
+in the right cntroll panel. The results are promising but the
+rythymn of the shots seems wrong: it would be better if the first
+three shot were short and quick, and the animated shot were a
+lot longer. To fix this, make sure you're on the 4th shot,
+and find the Set Ticks button in the right control panel.
+<p>
+<img src="setticks.jpg">
+</p>
+A tick is a unit of time. By default, Comiola assigns each shot 
+10 ticks. If you want a shot to last 1/2 as long as the default,
+set its ticks to "5". If you want it to last 4 times as long, set its
+ticks to "40". 
+<p>
+But how long is a tick in seconds? That depends! Have a closer look
+at the Animation section of the right control panel.
+<p>
+<img src="animation.jpg">
+</p>
+All of the "Play" buttons, plus Create Video, have a "secs" (short for
+"seconds") field. When 
+you click a play button (or create the video) Comiola will total up 
+all the ticks for each shot, then adjust the milliseconds in a tick to
+ensure that the duration of the animation accords with the value in
+the "secs" field.
+<p>
+Timing in animation is everything! The best way to get a feel for it is to
+play with the settings. If you want to make a shot shorter, assign it 
+less ticks. If you want to make it longer, give it more ticks. Then 
+experiment with the "secs" values to see how the whole piece flows.
+<p> 
+To wrap up this tutorial, click Create Video in the right control
+panel. 
+
+<p>
+<img src="createvideo.jpg">
+</p>
+If your project is named "MyProject", this will create the file
+"MyProject.mp4" in the project directory.
+
+<div id="tutorial1" class="entry">
+<div class="entrytitle">
+Comiola Tutorial: Animating Sprites
+</div>
+
+This tutorial uses 4 new images:
+<p>
+<img src="goose1.png">
+<img src="goose2.png">
+<img src="goose3.png">
+<img src="goose4.png">
+<p>
+Right-click each of them, and save them to your project directory. Re-open
+your project, navigate to the last shot, and click Add Shots. Select 
+queenofnight.jpg in the File Select dialog. Leave the camera as is 
+(centered and as wide as possible). Click Sprites: Add in the right
+control panel:
+<p>
+<img src="addsprites.jpg">
+</p>
+
+and select all four of the goose images in the File Select 
+Dialog. This will add a goose to the shot:
+<p>
+<img src="sprites1.jpg">
+</p>
+
+To move a sprite, click and drag the red square in the center.
+To resize it, click and drag the red triangle. Use these controls
+to move the goose down to the lower left corner of the shot,
+and make it bigger. It should look something like this:
+<p>
+<img src="sprites2.jpg">
+</p>
+We're going to make the goose fly up and out of the shot, using a
+3 point animation path. So far we've got the first point. Add the second
+point by clicking Pt: Add on the top control bar.
+<p>
+<img src="ptadd.jpg">
+</p>
+Click it again to add the third point. Then move and resize the new
+points so the shot looks something like this:
+<p>
+<img src="sprites3.jpg">
+</p>
+
+<p>
+Tip: to add a point to a path, the path must first have been selected
+(otherwise the Pt: Add button is inactive). To select a path, just 
+click the red square associated with any of the existing points.
+<p>
+
+After moving and resizing the points, the shot should look like this.
+<p>
+<img src="sprites4.jpg">
+</p>
+
+Before playing the shot, there's one more adjustment to make. 
+Select the first point in the animation by clicking its red
+square. Then, in the top
+control bar, find the labeled "Rot:" (that stands for "Rotate").
+<p>
+<img src="rot.jpg">
+</p>
+Change the value to 45.0, then click the Rot: button. The first goose
+is now tilted upwards. Select the second point, and set its rotation
+to 20.0.  Then click Play This Shot in the right control panel to
+see how it all looks.
+
+<p>
+There are several things we can do to improve the shot. One is to change the
+path so that the path begins and ends off camera. Use the +/- buttons in
+the left of the top control to zoom out. Once you've zoomed out,
+click and drag the background image so it's in the center of the
+display. Then move the start and end points of the path so they're
+both off camera. It should look like this:
+<p>
+<img src="sprites5.jpg">
+</p>
+
+Click Play This Shot to see if the new version is better.
+
+<p>
+A second thing to try concerns the "Frames-per-cell". Find the box
+labled "FperCell" in the top control panel.
+
+<p>
+<img src="fpercell.jpg">
+</p>
+
+We're using 4 different drawings of the goose, so this is a 4-cell animation.
+Currently FperCell is 4. That means: show 4 frames of the first 
+drawing, then 4 frames of the second, etc.  Change FperCell to 2,
+then click Play This Shot. The goose's wings will flap faster.
+
+<p>
+A final parameter of interest is the "Reps" value (it's located right
+before the FperCell setting in the top control panel). "Reps" is short
+for "repititions", and specifies how many times the animation should
+play during the course of the shot. A Reps value of 1 means: play 
+the animation once. A value of 3 means: play it 3 times. Reset the 
+value to 3, then click Play This Shot. The goose will fly much faster.
+
+<p>
+Let's look now at another approach to animation. We'll animate a sprite,
+then lock the camera on it, creating a tracking shot. This
+shot requires 3 more images:
+<p>
+<img src="fence.jpg" width=250 height=125>
+<img src="alice.png">
+<img src="tree.png" width=131 height=187>
+<p>
+Right-click each of these, and save to the project directory. Then click
+Add Shots in the right control panel, and select "fence.jpg" from the
+Select File dialog. This image is large, so you'll need to use the +/-
+zoom buttons on the left of the top control panel to bring it into view.
+<p>
+Next click Sprite: Add and select "tree.png" from the Select File dialog.
+Move the tree to the center of the shot. Then click Sprite: Add and select
+"alice.png". Place Alice in the lower right. We're going to animate Alice,
+so we need to add a point on her path: find the "Pt: Add" button on the
+top control panel, and click it.
+<p>
+<img src="ptadd.jpg">
+</p>
+Click/drag the center red square of the newly added point over to the left,
+so the shot looks like this.
+
+<p>
+<img src="aliceani.jpg">
+</p>
+
+
+Click Play This Shot. Notice that Alice passes behind the tree. This is 
+a problem of "Z-order". Sprites with higher Z appear in front of sprites
+with lower Z. By default, all sprites (animation path points) are assigned
+a Z value of 0. So to fix this shot, click the red square for the tree 
+sprite, thus selecting it. Then find the "setZ:" button in the top control
+panel:
+
+<p>
+<img src="setz.jpg">
+</p>
+
+Change the value to -1, then click the "setZ" button. If you click
+Play This Shot, Alice will pass in front of the tree.
+
+<p>
+Now bring the camera down and to the right, resizing it so it frames
+Alice.
+<p>
+<img src="aliceani2.jpg">
+</p>
+
+Then click Lock Cam in the upper control panel.
+<p>
+<img src="lockcam.jpg">
+</p>
+
+<p>
+Click Play This Shot and you'll see the camera follows Alice as she
+moves across the background.
+
+<p>
+Try changing the Reps count for the shot to 3. Click the red square for
+the first point in the sprite's animation path, then change the value
+in the Reps box in the top control panel:
+<p>
+<img src="reps.jpg">
+</p>
+
+You'll find that the
+camera is no longer synchronized with the sprite. To bring it back in
+sync, you must also change the Rep count of the camera to 3.
+Also: if you change the animation path of the sprite, you'll need
+to click Lock Cam to re-sync the camera with the sprite.
+
+
+
+
+
+
+<div id="upload" class="entry">
+<div class="entrytitle">
+How do I upload my novel/short story/screenplay?
+</div>
+<p> 
