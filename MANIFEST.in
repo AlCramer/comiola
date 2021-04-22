@@ -1,0 +1,4 @@
+include comiola/faq/*.jpg
+include comiola/faq/*.png
+include comiola/faq/faq.htm
+include comiola/res/*.*
