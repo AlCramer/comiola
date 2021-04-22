@@ -44,7 +44,7 @@ def validate_view():
         shot_bgcolor.set('#ffffff')
 
     else:
-        add_after.set('%d' % scripts.cnt_shots())
+        add_after.set('%d' % (1 + display.ixshot))
         scr = scripts.script
         vid_secs.set('%.1f' % scr.time)
         if script_secs.get().strip() == '':

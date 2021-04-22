@@ -2,6 +2,9 @@ import tkinter as tk
 import tkinter.filedialog
 import tkinter.messagebox as msgbox
 
+import os
+import sys
+
 import scripts
 import controls
 from display import Display
@@ -25,7 +28,7 @@ import uisequences
 display = None
 # the tabcntrl
 tabcntrl = None
-# file dropdown control; and visibility status
+# file dropdown control
 file_dropdown = None
 # menu bar
 menu = None
@@ -81,11 +84,16 @@ def on_tab_select(name):
     elif name == 'Text':
         display.sel_ani = None
         display.sel_pt = None
+    elif name == 'Cut/Paste':
+        display.sel_te = None
+        display.sel_ani = None
+        display.sel_pt = None
     validate_view()
     return True
 
 def set_fdd_visible(visible):
-    global menu, fdd_visible
+    # show/hide the File button's drop down menu
+    global menu
     menu.update()
     if visible:
         file_dropdown.place(x=0,y=menu.winfo_y())
@@ -124,7 +132,7 @@ def make_gui(win):
             bg=col_cntrl_bg)
     tabcontainer.grid(row=1,column=1,rowspan=2,sticky=(tk.NE+tk.SW))
     tabcntrl = TabCntrl(tabcontainer,
-            ["Shots","Text","Sequences"],
+            ["Shots","Text","Cut/Paste"],
             [uishots.make_shotcntrls, 
                 uitext.make_textcntrls,
                 uisequences.make_seqcntrls],
@@ -152,23 +160,27 @@ def make_gui(win):
     win.columnconfigure(0, weight=1)
     win.rowconfigure(2, weight=1)
 
+usage = \
+"""
+usage:
+    python comiola.py [project_filepath_option]
+"""
 
 def main():
+    if len(sys.argv) > 2:
+        print('%s%s' % ('unrecognized arguments',usage))
+        exit(1)
     make_gui(win)
+    # start dev code. Comment out before checkin!
+    sys.argv.append('C:/Users/Al/mycomics/cp/MyProject.cprj')
+    # end dev code
+    if len(sys.argv) == 2:
+        scripts.open_project(*os.path.split(sys.argv[1]), False)
+        uibanner.proj_dir.set(scripts.proj_filepath)
+        display.edit_shot(0)
     validate_view()
     win.mainloop()
 
-# start dev code. This assumes you built a project and want to go
-# straight to it (avoids the hassle of File/Open).
-def dev():
-    make_gui(win)
-    scripts.open_project('C:/Users/Al/mycomics/cp','MyProject',False)
-    uibanner.proj_dir.set(scripts.proj_filepath)
-    display.edit_shot(0)
-    win.mainloop()
-# end dev code
-
 if __name__ == '__main__':
-    #main()
-    dev()
+    main()
 

@@ -115,7 +115,7 @@ def make_textcntrls(container):
         ],
         [
             Lab('Color:','cntrls',[4,1]),
-            Entry(fontcolor,6,[1,4]),
+            Entry(fontcolor,8,[1,4]),
             But('Apply',text_apply,'cntrls',[4,4])
         ],
         [
@@ -135,8 +135,8 @@ def make_textcntrls(container):
         ],
         [
             ImgBut('colorbg',on_colorbg,[2,2]),
-            Lab('Color:','cntrls',[4,1]),
-            Entry(colorbg,6,[1,4]),
+            Lab('Color:','cntrls',[7,1]),
+            Entry(colorbg,8,[1,4]),
         ],
         [
             But('Delete Selected',delete_te,'cntrls',[4,4])

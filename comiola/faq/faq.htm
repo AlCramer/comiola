@@ -75,7 +75,11 @@ comiola faq
 <h4> Getting started </h4> 
 
 <div class="index">
-<a href="#tutorial"> Comiola Tutorials</a>
+<a href="#tutorial"> Comiola Tutorial1: Projects, Shots, and Camera</a>
+</div>
+
+<div class="index">
+<a href="#tutorial2"> Comiola Tutorial2: Animating Sprites</a>
 </div>
 
 <div class="index">
@@ -86,7 +90,7 @@ comiola faq
 
 <div id="tutorial" class="entry">
 <div class="entrytitle">
-Comiola Tutorial: Shots and Camera
+Comiola Tutorial: Projects, Shots, and Cameras
 </div>
 
 <p>
@@ -98,7 +102,7 @@ the folder. The file name is "queenofnight.jpg".
 </p>
 
 To create the new project, click the File button in the upper left corner
-of the editor. The file drop pane will appear.
+of the editor. The file dropdown pane will appear.
 <p>
 <img src="filedropdown.jpg">
 </p>
@@ -110,8 +114,8 @@ a new (empty) project. The display next to the file button changes to
 </p>
 The project file is named "MyProject.cprj" 
 (all project files end with ".cprj").
-To reopen this project after you've exited Comiloa, 
-click File/Open and select that file from the File open dialog.
+To reopen this project after you've exited and then restarted Comiloa, 
+click File/Open and select that file from the File Open dialog.
 <p>
 To add the first shot, click the "Add Shots" button in the editor control 
 panel.
@@ -134,17 +138,17 @@ sphinx. Fiddle with the camera controls until you get something like this:
 What's this shot actually look like? Here's another look at the control 
 panel of the editor. 
 <p>
-<img src="addshots2.jpg">
+<img src="playthisshot.jpg">
 </p>
              
 Click the "Play this Shot" button. You'll see a 2-second shot of the
 sphinx. Not very interesting, so let's add a second shot.
 In the editor control panel, click the "Clone Shot" button: 
 <p>
-<img src="addshots3.jpg">
+<img src="cloneshot.jpg">
 </p>
 
-We're now on the second. Move and resize the camera so it looks like
+We're now on the second shot. Move and resize the camera so it looks like
 this.
 
 <p>
@@ -256,10 +260,23 @@ panel.
 If your project is named "MyProject", this will create the file
 "MyProject.mp4" in the project directory.
 
-<div id="tutorial1" class="entry">
+<p>
+The next tutorial builds on this one, so you should save the project.
+When you close Comiola by clicking the X in the top right corner,
+you'll be asked if you want to save the project: just click yes in
+the popup dialog. Or you can click the File button in the top
+control panel and click Save on the dropdown menu.
+<p>
+<img src="filesave.jpg">
+</p>
+
+
+
+<div id="tutorial2" class="entry">
 <div class="entrytitle">
-Comiola Tutorial: Animating Sprites
+Comiola Tutorial2: Animating Sprites
 </div>
+<p>
 
 This tutorial uses 4 new images:
 <p>
@@ -297,18 +314,13 @@ point by clicking Pt: Add on the top control bar.
 <img src="ptadd.jpg">
 </p>
 Click it again to add the third point. Then move and resize the new
-points so the shot looks something like this:
-<p>
-<img src="sprites3.jpg">
-</p>
-
+points so the shot looks something like the picture below.
 <p>
 Tip: to add a point to a path, the path must first have been selected
 (otherwise the Pt: Add button is inactive). To select a path, just 
 click the red square associated with any of the existing points.
 <p>
 
-After moving and resizing the points, the shot should look like this.
 <p>
 <img src="sprites4.jpg">
 </p>
@@ -421,8 +433,9 @@ moves across the background.
 
 <p>
 Try changing the Reps count for the shot to 3. Click the red square for
-the first point in the sprite's animation path, then change the value
-in the Reps box in the top control panel:
+the first point in the sprite's animation path (clicking any point in
+an animation selects it). Reset the value
+in the Reps box in the top control panel to 3.
 <p>
 <img src="reps.jpg">
 </p>

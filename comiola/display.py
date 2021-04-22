@@ -234,10 +234,10 @@ class Display:
                 self.draw_spr(pt,ip.get(spr.fnlst[0],'RGBA'),img_dst)
         # draw the text element controllers (will draw text
         # as well)
+        draw_pil = ImageDraw.Draw(img_dst)
         for te in s.textels:
             te.cntrl.draw(draw_pil, img_dst)
         # draw the sprite controlls
-        draw_pil = ImageDraw.Draw(img_dst)
         for spr in s.sprites:
             #for pt in spr.path:
             spr.cntrl.draw(draw_pil)
