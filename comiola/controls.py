@@ -226,18 +226,7 @@ class TextElCntrl:
         self.set_resize_handle()
         # draw the te bg.
         te = self.te
-        # get (x0,y0,x1,y1) for bg
-        lo = te.lo_bg
-        w = lo.w/2 - 2
-        h = lo.h/2 - 2
-        (x0,y0) = display.from_im_coords(lo.x-w, lo.y-h)
-        (x1,y1) = display.from_im_coords(lo.x+w, lo.y+h)
-        bgspec = te.bgspec
-        if bgspec != 'null':
-            if bgspec.startswith('#'):
-                draw_pil.rectangle((x0,y0,x1,y1), fill=bgspec)
-            else:
-                display.draw_spr(te.lo_bg,ip.get_res(bgspec), img_pil)
+        display.draw_te_bg(te,te.lo_bg,draw_pil,img_pil)
         # draw handles for te.lo_text, resize, and yoff
         shape = 'oval' if self.te == display.sel_te else 'rect'
         color = '#00ffff'
@@ -245,15 +234,14 @@ class TextElCntrl:
         self.bgsize.handle.draw(draw_pil,color,'tri')
         self.yoff.handle.draw(draw_pil,color,'tri')
         # draw a rectangle showing size
+        lo = te.lo_bg
+        w = lo.w/2 - 2
+        h = lo.h/2 - 2
+        (x0,y0) = display.from_im_coords(lo.x-w, lo.y-h)
+        (x1,y1) = display.from_im_coords(lo.x+w, lo.y+h)
         draw_pil.rectangle((x0,y0,x1,y1), outline=color)
         # draw the text
-        font = get_font(te.fontname,te.fontsize)
-        lo = te.lo_text
-        (x0,y0) = display.from_im_coords(lo.x - lo.w/2, lo.y - lo.h/2)
-        draw_pil.text( (x0,y0),
-                te.text, fill=te.fontcolor, font=font) 
-
-
+        display.draw_te_text(te,te.lo_text,draw_pil)
 
     def on_mousedown(self,pt,x,y):
         self.dragS = [x,y]

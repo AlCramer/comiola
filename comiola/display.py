@@ -165,54 +165,26 @@ class Display:
         img_dst.paste(img,(int(x0),int(y0)),mask=img)
         img.close()
 
+    def draw_te_bg(self,te,pt,draw_pil,img_pil):
+        # get (x0,y0,x1,y1) for bg
+        w = pt.w/2 - 2
+        h = pt.h/2 - 2
+        (x0,y0) = self.from_im_coords(pt.x-w, pt.y-h)
+        (x1,y1) = self.from_im_coords(pt.x+w, pt.y+h)
+        bgspec = te.bgspec
+        if bgspec != 'null':
+            if bgspec.startswith('#'):
+                draw_pil.rectangle((x0,y0,x1,y1), fill=bgspec)
+            else:
+                self.draw_spr(pt,ip.get_res(bgspec), img_pil)
 
-    # TODO: remove old version
-    def __draw_edit(self):
-        self.can.delete("all")
-        if scripts.cnt_shots() == 0:
-            return
-        s = self.shot
-        # create "img_dst": the (pil) image we will draw upon;
-        # also prepare a pil draw object.
-        img_bg = s.get_bg_pil()
-        (w_bg,h_bg) = img_bg.size
-        scale = self.scale_im_to_can
-        w_dst = int(scale*w_bg) + max(0,2*self.xmar)
-        h_dst = int(scale*h_bg) + max(0,2*self.ymar)
-        img_dst = Image.new("RGB",(w_dst,h_dst),(0x45,0x45,0x45))
-        # paste bg image
-        w_bg *= self.scale_im_to_can
-        h_bg *= self.scale_im_to_can
-        img_bg = img_bg.resize((int(w_bg),int(h_bg)), Image.ANTIALIAS)
-        (x0,y0) = self.from_im_coords(0,0)
-        img_dst.paste(img_bg,(x0,y0))
-        # draw camera, sprites, and text element controllers.
-        draw_pil = ImageDraw.Draw(img_dst)
-        # better UX: if no pt or te is selected, camera is draw
-        # last; otherwise it's drawn first.
-        drew_cam = False
-        if self.sel_pt is not None or self.sel_te is not None:
-            s.cam.cntrl.draw(draw_pil)
-            drew_cam = True
-        # draw the sprite images and controllers
-        for spr in s.sprites:
-            for pt in spr.path:
-                self.draw_spr(pt,ip.get(spr.fnlst[0],'RGBA'),img_dst)
-                spr.cntrl.draw(draw_pil)
-        # draw the text element controllers (will draw text
-        # as well)
-        for te in s.textels:
-            te.cntrl.draw(draw_pil, img_dst)
-        # draw cam as needed
-        if not drew_cam:
-            s.cam.cntrl.draw(draw_pil)
-        # blit image to canvas
-        # tk requires that the image be bound to a static var,
-        # hence self.img_tk
-        self.img_tk = ImageTk.PhotoImage(img_dst)
-        self.can.create_image(0,0,
-            anchor=tk.NW,image=self.img_tk)
-        img_dst.close()
+    def draw_te_text(self,te,pt,draw_pil):
+        font = get_font(te.fontname,te.fontsize)
+        lo = te.lo_text
+        (x0,y0) = self.from_im_coords(lo.x - lo.w/2, lo.y - lo.h/2)
+        draw_pil.text( (x0,y0),
+                te.text, fill=te.fontcolor, font=font) 
+                #te.text, font=font) 
 
     def draw_edit(self):
         self.can.delete("all")

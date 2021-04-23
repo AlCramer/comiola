@@ -9,6 +9,7 @@ import images
 from controls import AniCntrl, PtCntrl
 from widgets import *
 from uicolors import *
+import animate
 
 # the display
 display = None
@@ -104,7 +105,7 @@ def play_shot():
         return
     try:
         v = float(shot_secs.get())
-        scripts.animate_shots(ix,ix+1,v)
+        animate.animate_shots(ix,ix+1,v)
     except ValueError:
         msgbox.showerror('Comiola','"Secs" value must be a number')
         validate_view()
@@ -123,7 +124,7 @@ def play_seq():
     except ValueError:
         msgbox.showerror('Comiola','"Secs" must be a number')
         return 
-    scripts.animate_shots(S,E,secs)
+    animate.animate_shots(S,E,secs)
 
 def play_script():
     N = scripts.cnt_shots()
@@ -136,7 +137,7 @@ def play_script():
     except ValueError:
         msgbox.showerror('Comiola','"Secs" value must be a number')
         return
-    scripts.animate_shots(0,N,v)
+    animate.animate_shots(0,N,v)
 
 vid_status_msg = tk.StringVar()
 
@@ -149,7 +150,7 @@ def create_video():
     try:
         v = float(vid_secs.get())
         scripts.script.time = v
-        scripts.make_mp4(vid_status_msg.peer)
+        animate.make_mp4(vid_status_msg.peer)
     except ValueError:
         msgbox.showerror('Comiola','"Secs" value must be a number')
 

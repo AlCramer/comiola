@@ -7,6 +7,7 @@ import sys
 
 import scripts
 import controls
+import animate
 from display import Display
 import widgets
 from widgets import TabCntrl
@@ -143,7 +144,7 @@ def make_gui(win):
             highlightthickness=0, bg=col_display_bg)
     can.grid(row=2,column=0,sticky=(tk.NW+tk.SE))
     display = Display(can,do_commit,validate_view,tabcntrl,set_fdd_visible)
-    scripts.display = controls.display = display
+    animate.display = scripts.display = controls.display = display
 
     # display is globally visible to all components
     uibanner.display = display
@@ -172,7 +173,7 @@ def main():
         exit(1)
     make_gui(win)
     # start dev code. Comment out before checkin!
-    # sys.argv.append('C:/Users/Al/mycomics/cp/MyProject.cprj')
+    sys.argv.append('C:/Users/Al/junk/test1.cprj')
     # end dev code
     if len(sys.argv) == 2:
         scripts.open_project(*os.path.split(sys.argv[1]), False)
