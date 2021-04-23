@@ -172,7 +172,7 @@ def main():
         exit(1)
     make_gui(win)
     # start dev code. Comment out before checkin!
-    sys.argv.append('C:/Users/Al/mycomics/cp/MyProject.cprj')
+    # sys.argv.append('C:/Users/Al/mycomics/cp/MyProject.cprj')
     # end dev code
     if len(sys.argv) == 2:
         scripts.open_project(*os.path.split(sys.argv[1]), False)

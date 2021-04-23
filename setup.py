@@ -28,7 +28,7 @@ setup(
     install_requires=["Pillow", "imageio"],
     entry_points={
         "console_scripts": [
-            "comiola=comiola.__main__:main",
+            "comiola=comiola:main",
         ]
     },
 )

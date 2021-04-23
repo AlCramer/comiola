@@ -27,10 +27,14 @@ class Display:
         self.scale_im_to_can = 1.0
         # index of shot we're currently showing
         self.ixshot = -1
+        # the handles
+        self.handles = []
         # selected animation, pt, or text element 
         self.sel_ani = None
         self.sel_pt = None
         self.sel_te = None
+        # anchor element for set anchor/lock operations
+        self.anchor = None
         # drag pt
         self.drag_pt = None
         # used in move-canvas operation
@@ -98,6 +102,7 @@ class Display:
             self.sel_ani = None
             self.sel_pt = None
             self.sel_te = None
+            self.anchor = None
             self.validate_view()
             return
         # the handle's point is our drag point

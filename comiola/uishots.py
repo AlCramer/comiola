@@ -3,9 +3,10 @@ import tkinter.messagebox as msgbox
 import os
 
 import scripts
+from scripts import Pt
 import controls
 import images
-from controls import AniCntrl 
+from controls import AniCntrl, PtCntrl
 from widgets import *
 from uicolors import *
 
@@ -65,6 +66,12 @@ def validate_view():
             play_shot, play_seq, play_script, create_video]
         if display.ixshot > 0:
             on_buts.append(set_cam_cont)
+        if (display.sel_ani is not None and
+            len(display.sel_ani.path) > 1):
+            on_buts.append(set_anchor)
+        if (display.anchor is not None and
+            display.sel_pt is not None):
+            on_buts.append(do_lock)
         for b in on_buts:
             enable_but(b)
 
@@ -239,6 +246,51 @@ def set_cam_cont():
     s.cam.path[0].rot = prv.cam.path[-1].rot
     display.draw_edit()
 
+def set_anchor():
+    ani = display.sel_ani
+    ani_0 = ani.path[0]
+    if display.sel_pt != ani_0:
+        msgbox.showerror('Comiola','Anchor must be first point in path')
+        return
+    display.anchor = display.sel_ani
+
+def do_lock():
+    # "anchor" is an Ani object, that defines a path
+    anchor = display.anchor
+    # "ani" is animation we're rebuilding, to follow the
+    # anchor path. It will be the currently selected Ani object.
+    ani = display.sel_ani
+    # "pt": currently selected point. If it's in the path of the
+    # anchor, the lock is illegal
+    pt = display.sel_pt
+    if pt in anchor.path:
+        msgbox.showerror('Comiola',
+            "You can't lock that point to the current anchor")
+        return
+    # And pt must be the first animation point of the lock-ee
+    if pt != ani.path[0]:
+        msgbox.showerror('Comiola',
+            "Selected point must be first point in animation path")
+        return
+    # rebuild the lock-ee's path
+    # anchor_0 is first point in the anchor path
+    # ani_0 is first point in the ani path
+    anchor_0 = anchor.path[0]
+    ani_0 = ani.path[0]
+    xoff = (ani_0.x - anchor_0.x)/anchor_0.w
+    yoff = (ani_0.y - anchor_0.y)/anchor_0.w
+    w_factor = ani_0.w/anchor_0.w
+    ani.cntrl.delete_all_pts()
+    for px in anchor.path:
+        x = px.x + xoff*px.w
+        y = px.y + yoff*px.w
+        w = px.w*w_factor
+        p = Pt(x,y,0.0,0.0,0.0,w,w)
+        ani.add_pt(p)
+        PtCntrl(p,ani)
+    ani.cycles = anchor.cycles
+    display.validate_view()
+
 def make_shotcntrls(container):
     global vid_status_msg
     vid_status_msg = Lab('','cntrls',[2,1])
@@ -265,16 +317,20 @@ def make_shotcntrls(container):
             Entry(shot_tks,6,[2,4])
         ],
         [
-            Lab('Sprites:','cntrls',[4,4]),
-            But('Add',add_sprite,'cntrls',[4,4]),
-            But('Delete',delete_sprite,'cntrls',[4,4])
-        ],
-        [
             But('Set Bg. Color:',set_shot_bgcolor,'cntrls',[4,1]),
             Entry(shot_bgcolor,6,[4,2]),
         ],
         [
             But('Set Cam Continuity',set_cam_cont,'cntrls',[4,1]),
+        ],
+        [Header("Sprites:")],
+        [
+            But('Add',add_sprite,'cntrls',[4,4]),
+            But('Delete',delete_sprite,'cntrls',[4,4])
+        ],
+        [
+            But('Set Anchor',set_anchor,'cntrls',[4,4]),
+            But('Lock',do_lock,'cntrls',[4,4])
         ],
         [Header("Animation:")],
         [

@@ -40,7 +40,6 @@ def validate_view():
             enable_but(delete_pt)
             enable_but(on_z)
             enable_but(on_rot)
-            enable_but(on_lock)
         if display.sel_pt is not None:
             ptZ.set('%.1f' % display.sel_pt.z)
             rot.set('%.1f' % display.sel_pt.rot)
@@ -145,28 +144,6 @@ def on_rot():
         msgbox.showerror('Comiola','"Rotate" value must be a number')
     display.validate_view()
 
-def on_lock():
-    ani = display.sel_ani
-    ani_0 = ani.path[0]
-    if ani.is_cam:
-        msgbox.showerror('Comiola','Selected point must belong to a sprite')
-        return
-    cam = display.shot.cam
-    cam_0 = cam.path[0]
-    xoff = (cam_0.x - ani_0.x)/ani_0.w
-    yoff = (cam_0.y - ani_0.y)/ani_0.w
-    w_factor = cam_0.w/ani_0.w
-    cam.cntrl.delete_all_pts()
-    for px in display.sel_ani.path:
-        x = px.x + xoff*px.w
-        y = px.y + yoff*px.w
-        w = px.w*w_factor
-        p = Pt(x,y,0.0,0.0,0.0,w,w)
-        cam.add_pt(p)
-        PtCntrl(p,cam)
-    cam.cycles = ani.cycles
-    display.validate_view()
-
 def make_menu(container):
     terms = [
         But('+',zoomin,'menu',[4,4]),
@@ -187,7 +164,6 @@ def make_menu(container):
         Entry( ptZ,4,[2,4]),
         But('Rot:',on_rot,'menu',[4,2]),
         Entry( rot,4,[2,4]),
-        But('Lock Cam',on_lock,'menu',[4,2]),
     ]
     build_row(container,terms)
 

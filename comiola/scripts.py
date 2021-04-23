@@ -391,12 +391,12 @@ def open_project(d,name,create):
                     return False
                 script = Script.unserialize(src)
                 script0_serialized = script.serialize().strip()
-                ip.proj_dir = proj_dir
         except:
             msgbox.showerror('Comiola',
                 'Could not read "%s/%s"' % (d,name))
             proj_filepath = ''
             return False
+    ip.proj_dir = proj_dir
     return True
 
 def extend_script(newshots,add_after):
