@@ -2,7 +2,7 @@ import tkinter as tk
 from PIL import ImageTk,Image,ImageDraw
 
 import scripts
-from scripts import Pt,Ani
+from scripts import Pt,Ani,get_font
 import imgpool as ip
 from controls import *
 
@@ -21,9 +21,12 @@ class Display:
         # width & height of image (non-scaled)
         self.w_img = 0
         self.h_img = 0
+        # padding. We sprites on an image that's 
+        # basically the bg, surrounded by this padding.
+        self.pad = 100
         # position and scale for canvas
-        self.xmar = 20
-        self.ymar = 20
+        self.xoff = -80
+        self.yoff = -80
         self.scale_im_to_can = 1.0
         # index of shot we're currently showing
         self.ixshot = -1
@@ -32,9 +35,10 @@ class Display:
         # selected animation, pt, or text element 
         self.sel_ani = None
         self.sel_pt = None
-        self.sel_te = None
-        # anchor element for set anchor/lock operations
-        self.anchor = None
+        # Some operations require mutiple point selections.
+        # These record the first selection, and what action we're doing
+        self.first_sel_pt = None
+        self.action = ''
         # drag pt
         self.drag_pt = None
         # used in move-canvas operation
@@ -47,17 +51,27 @@ class Display:
     def to_im_coords(self,x,y):
         s = self.scale_im_to_can
         return (
-                int( (x-self.xmar)/s ),
-                int( (y-self.ymar)/s )
+                int( (x-self.xoff)/s ) - self.pad,
+                int( (y-self.yoff)/s ) - self.pad
                 )
 
     # image coords-> canvas coord
     def from_im_coords(self,x,y):
         s = self.scale_im_to_can
         return (
-                int(s*x)+self.xmar,
-                int(s*y)+self.ymar
+                int(s*(x+self.pad))+self.xoff,
+                int(s*(y+self.pad))+self.yoff,
                 )
+
+    def set_pt_selected(self,pt):
+        if pt is None:
+            self.sel_pt = None
+            self.sel_ani = None
+            self.last_h_selected = None
+        else:
+            self.sel_pt = pt
+            self.sel_ani = pt.ani
+            self.last_h_selected = pt.handle
 
     def on_doubleclick(self,ev):
         (x,y) = self.to_im_coords(ev.x,ev.y)
@@ -86,6 +100,13 @@ class Display:
                 return
         self.on_h_selected(None,ev)
 
+    def deselect_all(self):
+        self.sel_ani = None
+        self.sel_pt = None
+        self.first_sel_pt = None
+        self.action = ''
+        self.validate_view()
+
     def on_h_selected(self,h,ev):
         # a handle was selected. De-selection is also handled here
         # (h of None means de-select).
@@ -95,31 +116,17 @@ class Display:
                 return
         # set up for move-canvas
         self.dragS = (ev.x, ev.y)
-        self.marS = (self.xmar,self.ymar)
+        self.marS = (self.xoff,self.yoff)
         self.last_h_selected = h
         if h is None:
-            # de-select all
-            self.sel_ani = None
-            self.sel_pt = None
-            self.sel_te = None
-            self.anchor = None
-            self.validate_view()
+            self.deselect_all()
             return
         # the handle's point is our drag point
         self.drag_pt = h.pt
         # Does clicking the handle set our selected ani & pt? 
-        if h.sel_te is not None:
-            self.sel_pt = None
-            self.sel_ani = None
-            self.sel_te = h.sel_te
-            self.tabcntrl.show_tab('Text')
-        else:
-            self.sel_te = None
-            if h.sel_pt is not None:
-                self.sel_pt = h.sel_pt
-                self.tabcntrl.show_tab('Shots')
-            if h.sel_ani is not None:
-                self.sel_ani = h.sel_ani
+        if h.selectable:
+            self.sel_pt = h.pt
+            self.sel_ani = h.pt.ani
         # pass the event onto the selected controller for handling
         (x,y) = self.to_im_coords(ev.x,ev.y)
         h.pt.cntrl.on_mousedown(h.pt,x,y)
@@ -147,89 +154,99 @@ class Display:
             # moving cavas
             xdelta = ev.x - self.dragS[0]
             ydelta = ev.y - self.dragS[1]
-            self.xmar = self.marS[0] + xdelta
-            self.ymar = self.marS[1] + ydelta
+            self.xoff = self.marS[0] + xdelta
+            self.yoff = self.marS[1] + ydelta
             self.draw_edit()
 
     def draw_spr(self,pt,img,img_dst):
         w = pt.w
         h = pt.h
-        (x0,y0) = self.from_im_coords(pt.x - w/2, pt.y - h/2)
-        w *= self.scale_im_to_can
-        h *= self.scale_im_to_can
+        pad = self.pad
+        (x0,y0) = (
+            int(pt.x + pad - w/2), 
+            int(pt.y + pad - h/2)
+            )
         img = img.resize((int(w),int(h)),Image.ANTIALIAS)
         if pt.rot != 0.0:
             _img = img.rotate(pt.rot)
             img.close()
             img = _img
-        img_dst.paste(img,(int(x0),int(y0)),mask=img)
+        img_dst.paste(img,(x0,y0),mask=img)
         img.close()
 
     def draw_te_bg(self,te,pt,draw_pil,img_pil):
-        # get (x0,y0,x1,y1) for bg
-        w = pt.w/2 - 2
-        h = pt.h/2 - 2
-        (x0,y0) = self.from_im_coords(pt.x-w, pt.y-h)
-        (x1,y1) = self.from_im_coords(pt.x+w, pt.y+h)
+        # get (x0,y0,x1,y1) for bg. 
+        (x0,y0,x1,y1) = te.get_bb_bg(pt.x,pt.y)
+        (x0,y0) = self.to_draw_coords(x0,y0)
+        (x1,y1) = self.to_draw_coords(x1,y1)
         bgspec = te.bgspec
         if bgspec != 'null':
             if bgspec.startswith('#'):
                 draw_pil.rectangle((x0,y0,x1,y1), fill=bgspec)
             else:
-                self.draw_spr(pt,ip.get_res(bgspec), img_pil)
+                img = ip.get_res(bgspec)
+                w = int(x1-x0+1)
+                h = int(y1-y0+1)
+                img = img.resize((w,h),Image.ANTIALIAS)
+                img_pil.paste(img,(x0,y0),mask=img)
+                img.close()
 
     def draw_te_text(self,te,pt,draw_pil):
-        font = get_font(te.fontname,te.fontsize)
-        lo = te.lo_text
-        (x0,y0) = self.from_im_coords(lo.x - lo.w/2, lo.y - lo.h/2)
-        draw_pil.text( (x0,y0),
-                te.text, fill=te.fontcolor, font=font) 
-                #te.text, font=font) 
+        (x0,y0,x1,y1) = te.get_bb_text(pt.x,pt.y)
+        draw_pil.text( 
+            self.to_draw_coords(x0,y0),
+            te.get_text(),
+            fill=te.fontcolor,
+            font=get_font(te.fontname,te.fontsize))
 
     def draw_edit(self):
         self.can.delete("all")
         if scripts.cnt_shots() == 0:
             return
         s = self.shot
-        # create "img_dst": the (pil) image we will draw upon;
-        # also prepare a pil draw object.
+        # create "img_dst": the (pil) image we will draw upon. It's
+        # the bg, surrounded by padding.
+        pad = self.pad
         img_bg = s.get_bg_pil()
         (w_bg,h_bg) = img_bg.size
-        scale = self.scale_im_to_can
-        w_dst = int(scale*w_bg) + max(0,2*self.xmar)
-        h_dst = int(scale*h_bg) + max(0,2*self.ymar)
-        img_dst = Image.new("RGB",(w_dst,h_dst),(0x45,0x45,0x45))
+        pad = self.pad
+        (w_dst, h_dst) = ( w_bg + 2*pad, h_bg + 2*pad)
+        img_dst = Image.new("RGB",(w_dst,h_dst), (0x45,0x45,0x45))
         # paste bg image
-        w_bg *= self.scale_im_to_can
-        h_bg *= self.scale_im_to_can
-        img_bg = img_bg.resize((int(w_bg),int(h_bg)), Image.ANTIALIAS)
-        (x0,y0) = self.from_im_coords(0,0)
-        img_dst.paste(img_bg,(x0,y0))
+        img_dst.paste(img_bg,(pad,pad))
+        # get shot animations, split into 2 groups: "spr" and "txt"
+        (spr_anis,txt_anis) = s.partition_anis()
         # draw sprite images
-        for spr in s.sprites:
-            for pt in spr.path:
-                self.draw_spr(pt,ip.get(spr.fnlst[0],'RGBA'),img_dst)
-        # draw the text element controllers (will draw text
-        # as well)
+        for ani in spr_anis:
+            for pt in ani.path:
+                self.draw_spr(pt,ip.get(ani.fnlst[0],'RGBA'),img_dst)
+        # draw text-element bg images.
         draw_pil = ImageDraw.Draw(img_dst)
-        for te in s.textels:
-            te.cntrl.draw(draw_pil, img_dst)
+        for ani in txt_anis:
+            for pt in ani.path:
+                self.draw_te_bg(ani.te,pt,draw_pil,img_dst)
         # draw the sprite controlls
-        for spr in s.sprites:
-            #for pt in spr.path:
-            spr.cntrl.draw(draw_pil)
+        for ani in spr_anis:
+            ani.cntrl.draw(draw_pil)
         # draw cam 
         s.cam.cntrl.draw(draw_pil)
-        # if sprite or te is selected, redraw (its on top in Z order)
-        if self.sel_te is not None:
-            self.sel_te.cntrl.draw(draw_pil, img_dst)
+        # draw text-element controls and txt
+        for ani in txt_anis:
+            ani.cntrl.draw(draw_pil)
+            for pt in ani.path:
+                self.draw_te_text(ani.te,pt,draw_pil)
+        # if ani is selected, redraw (it should be on top in Z order)
         if self.sel_ani is not None:
             self.sel_ani.cntrl.draw(draw_pil)
+        # resize img_dst
+        sc = self.scale_im_to_can
+        img_dst = img_dst.resize( (int(w_dst * sc), 
+            int(h_dst*sc)),Image.ANTIALIAS)
         # blit image to canvas
         # tk requires that the image be bound to a static var,
         # hence self.img_tk
         self.img_tk = ImageTk.PhotoImage(img_dst)
-        self.can.create_image(0,0,
+        self.can.create_image(self.xoff, self.yoff,
             anchor=tk.NW,image=self.img_tk)
         img_dst.close()
 
@@ -244,10 +261,8 @@ class Display:
             (self.w_img,self.h_img) = img.size
             # build the controllers for cam & sprites
             AniCntrl(self.shot.cam,"cam")
-            for spr in self.shot.sprites:
-                AniCntrl(spr,"sprite")
-            for te in self.shot.textels:
-                TextElCntrl(te)
+            for ani in self.shot.anis:
+                AniCntrl(ani,"sprite")
         ip.clear_refs()
         self.tabcntrl.show_tab('Shots')
         self.validate_view()
@@ -256,4 +271,7 @@ class Display:
     def sprite_selected(self):
         return (self.sel_ani is not None and
             self.sel_ani != self.shot.cam)
+
+    def to_draw_coords(self,x,y):
+        return (int(x+self.pad), int(y+self.pad))
 

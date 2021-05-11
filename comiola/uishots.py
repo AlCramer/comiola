@@ -6,7 +6,8 @@ import scripts
 from scripts import Pt
 import controls
 import images
-from controls import AniCntrl, PtCntrl
+import imgpool as ip
+from controls import AniCntrl, PtCntrl, TxtPtCntrl
 from widgets import *
 from uicolors import *
 import animate
@@ -47,6 +48,8 @@ def validate_view():
 
     else:
         add_after.set('%d' % (1 + display.ixshot))
+        playS.set('%d' % (1 + display.ixshot))
+        playE.set('%d' % (1 + display.ixshot))
         scr = scripts.script
         vid_secs.set('%.1f' % scr.time)
         if script_secs.get().strip() == '':
@@ -54,25 +57,13 @@ def validate_view():
         if shot_secs.get().strip() == '':
             shot_secs.set('2.0')
         if play_secs.get().strip() == '':
-            play_secs.set('%.1f' % (scr.time/2))
-        if playS.get().strip() == '':
-            playS.set('1')
-        if playE.get().strip() == '':
-            playE.set('1')
+            play_secs.set('2.0')
         shot_tks.set('%.1f' % display.shot.tks)
         if not display.shot.has_bg_illo():
             enable_but(set_shot_bgcolor)
-            shot_bgcolor.set(display.shot.get_bgspec())
+            shot_bgcolor.set(display.shot.bgspec)
         on_buts = [clone_shot, set_tks, add_sprite, delete_sprite,
-            play_shot, play_seq, play_script, create_video]
-        if display.ixshot > 0:
-            on_buts.append(set_cam_cont)
-        if (display.sel_ani is not None and
-            len(display.sel_ani.path) > 1):
-            on_buts.append(set_anchor)
-        if (display.anchor is not None and
-            display.sel_pt is not None):
-            on_buts.append(do_lock)
+            play_shots, play_script, create_video]
         for b in on_buts:
             enable_but(b)
 
@@ -97,20 +88,23 @@ def clone_shot():
         scripts.clone_shot(ix)
         display.edit_shot(ix + 1)
 
-def play_shot():
-    if not display.do_commit():
-        return
-    ix = display.ixshot
-    if ix == -1:
-        return
-    try:
-        v = float(shot_secs.get())
-        animate.animate_shots(ix,ix+1,v)
-    except ValueError:
-        msgbox.showerror('Comiola','"Secs" value must be a number')
-        validate_view()
+save_play_params =None 
+def on_animate_fini():
+    # callback function, called when animation is finished:
+    # return to editing current shot, and restore saved
+    # animation params.
+    display.edit_shot(display.ixshot)
+    for e in save_play_params:
+        e[0].set(e[1])
 
-def play_seq():
+def play_seq(S,E,secs):
+    global save_play_params
+    save_play_params = []
+    for e in [playS,playE,play_secs,script_secs]:
+        save_play_params.append([e,e.get()])
+    animate.animate_shots(S,E,secs,on_animate_fini)
+
+def play_shots():
     if not display.do_commit():
         return
     try:
@@ -124,7 +118,7 @@ def play_seq():
     except ValueError:
         msgbox.showerror('Comiola','"Secs" must be a number')
         return 
-    animate.animate_shots(S,E,secs)
+    play_seq(S,E,secs)
 
 def play_script():
     N = scripts.cnt_shots()
@@ -133,11 +127,11 @@ def play_script():
     if not display.do_commit():
         return
     try:
-        v = float(script_secs.get())
+        secs = float(script_secs.get())
     except ValueError:
         msgbox.showerror('Comiola','"Secs" value must be a number')
         return
-    animate.animate_shots(0,N,v)
+    play_seq(0,N,secs)
 
 vid_status_msg = tk.StringVar()
 
@@ -171,17 +165,32 @@ def add_sprite():
         scripts.install_sprite(fn)
         (head,tail) = os.path.split(fn)
         roots.append(tail[:-4])
-    # initial position is center of image
-    xc = display.xmar + int(display.w_img/2)
-    yc = display.ymar + int(display.h_img/2)
-    spr = scripts.add_sprite(xc,yc,display.ixshot,roots)
-    AniCntrl(spr,"sprite")
-    display.draw_edit()
+    # create new ani
+    ani = scripts.add_ani('spr',display.ixshot,fnlst=roots)
+    # create initial point.  position is center of image.
+    xc = display.xoff + int(display.w_img/2)
+    yc = display.yoff + int(display.h_img/2)
+    # Must compute w,h attributes
+    ar = ip.get_ar(roots[0],'RGBA')
+    if ar <= 1.0:
+        w = 180
+        h = int(.5 + ar*w)
+    else:
+        h = 180
+        w = int(.5 + h/ar)
+    pt = Pt(xc,yc,0.0, 0.0,0.0,w,h)
+    ani.path.append(pt)
+    AniCntrl(ani,"sprite")
+    # new ani and pt become selected
+    display.sel_ani = ani
+    display.sel_pt = pt
+    display.validate_view()
 
 def delete_sprite():
     if display.sprite_selected():
-        scripts.delete_sprite(display.ixshot,display.sel_ani)
+        scripts.delete_ani(display.ixshot,display.sel_ani)
         display.sel_ani = None
+        display.sel_pt = None
         display.validate_view()
 
 def set_shot_bgcolor():
@@ -190,7 +199,7 @@ def set_shot_bgcolor():
         msgbox.showerror('Comiola',
         'Background color must be an HTML style color code')
         return
-    display.shot.set_bgspec(c)
+    display.shot.bgspec = c
     display.validate_view()
 
 def get_ixafter():
@@ -234,64 +243,6 @@ def add_blank_shot():
     scripts.add_blank_shot(ixafter,color)
     display.edit_shot(ixafter+1)
 
-def set_cam_cont():
-    # camera continuity: this shot starts with same camera position/size
-    # that ended last shot.
-    s = scripts.get_shot(display.ixshot)
-    prv = scripts.get_shot(display.ixshot-1)
-    s.cam.path[0].x = prv.cam.path[-1].x
-    s.cam.path[0].y = prv.cam.path[-1].y
-    s.cam.path[0].z = prv.cam.path[-1].z
-    s.cam.path[0].w = prv.cam.path[-1].w
-    s.cam.path[0].h = prv.cam.path[-1].h
-    s.cam.path[0].rot = prv.cam.path[-1].rot
-    display.draw_edit()
-
-def set_anchor():
-    ani = display.sel_ani
-    ani_0 = ani.path[0]
-    if display.sel_pt != ani_0:
-        msgbox.showerror('Comiola','Anchor must be first point in path')
-        return
-    display.anchor = display.sel_ani
-
-def do_lock():
-    # "anchor" is an Ani object, that defines a path
-    anchor = display.anchor
-    # "ani" is animation we're rebuilding, to follow the
-    # anchor path. It will be the currently selected Ani object.
-    ani = display.sel_ani
-    # "pt": currently selected point. If it's in the path of the
-    # anchor, the lock is illegal
-    pt = display.sel_pt
-    if pt in anchor.path:
-        msgbox.showerror('Comiola',
-            "You can't lock that point to the current anchor")
-        return
-    # And pt must be the first animation point of the lock-ee
-    if pt != ani.path[0]:
-        msgbox.showerror('Comiola',
-            "Selected point must be first point in animation path")
-        return
-    # rebuild the lock-ee's path
-    # anchor_0 is first point in the anchor path
-    # ani_0 is first point in the ani path
-    anchor_0 = anchor.path[0]
-    ani_0 = ani.path[0]
-    xoff = (ani_0.x - anchor_0.x)/anchor_0.w
-    yoff = (ani_0.y - anchor_0.y)/anchor_0.w
-    w_factor = ani_0.w/anchor_0.w
-    ani.cntrl.delete_all_pts()
-    for px in anchor.path:
-        x = px.x + xoff*px.w
-        y = px.y + yoff*px.w
-        w = px.w*w_factor
-        p = Pt(x,y,0.0,0.0,0.0,w,w)
-        ani.add_pt(p)
-        PtCntrl(p,ani)
-    ani.cycles = anchor.cycles
-    display.validate_view()
-
 def make_shotcntrls(container):
     global vid_status_msg
     vid_status_msg = Lab('','cntrls',[2,1])
@@ -321,26 +272,14 @@ def make_shotcntrls(container):
             But('Set Bg. Color:',set_shot_bgcolor,'cntrls',[4,1]),
             Entry(shot_bgcolor,6,[4,2]),
         ],
-        [
-            But('Set Cam Continuity',set_cam_cont,'cntrls',[4,1]),
-        ],
         [Header("Sprites:")],
         [
             But('Add',add_sprite,'cntrls',[4,4]),
             But('Delete',delete_sprite,'cntrls',[4,4])
         ],
-        [
-            But('Set Anchor',set_anchor,'cntrls',[4,4]),
-            But('Lock',do_lock,'cntrls',[4,4])
-        ],
         [Header("Animation:")],
         [
-            But('Play This Shot',play_shot,'cntrls',[4,4]),
-            Lab('secs:','cntrls',[2,1]),
-            Entry(shot_secs,6,[1,2])
-        ],
-        [
-            But('Play',play_seq,'cntrls',[4,4]),
+            But('Play',play_shots,'cntrls',[4,4]),
             Entry(playS,6,[4,2]),
             Lab('..','cntrls',[2,2]),
             Entry(playE,6,[2,1]),

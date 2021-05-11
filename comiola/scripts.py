@@ -10,7 +10,7 @@ from images import Reg
 import imgpool as ip
 
 # header for comiola project file
-proj_file_header = 'comiola ver1.0'
+proj_file_header = 'comiola ver1.0.0'
 
 # the display is global: this set in comiola.py
 display = None
@@ -18,13 +18,13 @@ display = None
 class Pt:
     def __init__(self,x,y,
         param=0.0, z=0.0, rot=0.0, w=0.0, h=0.0):
-        self.x = x
-        self.y = y
-        self.param = param
-        self.z = z
-        self.rot = rot
-        self.w = w
-        self.h = h
+        self.x = float(x)
+        self.y = float(y)
+        self.param = float(param)
+        self.z = float(z)
+        self.rot = float(rot)
+        self.w = float(w)
+        self.h = float(h)
 
     def clone(self):
         return Pt(self.x,self.y,self.param,self.z,self.rot,self.w,self.h)
@@ -36,16 +36,9 @@ class Pt:
     @classmethod
     def unserialize(cls,src):
         lst = src.split(',')
-        return Pt(
-            float(lst[0]),
-            float(lst[1]),
-            float(lst[2]),
-            float(lst[3]),
-            float(lst[4]),
-            float(lst[5]),
-            float(lst[6]))
+        return Pt(*(src.split(',')))
 
-    def move_to(self,x,y):
+    def set_xy(self,x,y):
         self.x = x
         self.y = y
 
@@ -55,45 +48,40 @@ class Pt:
 
 
 class Ani:
-    def __init__(self,fnlst,tS,tE,cycles,frames_per_cell):
-        self.fnlst = fnlst
-        self.tS = tS
-        self.tE = tE
-        self.cycles = cycles
-        self.frames_per_cell = frames_per_cell
+    def __init__(self,kind,tS,tE,cycles,frames_per_cell):
+        # kind: "spr","cam","txt"
+        self.kind = kind
+        self.tS = float(tS)
+        self.tE = float(tE)
+        self.cycles = float(cycles)
+        self.frames_per_cell = float(frames_per_cell)
         self.path = []
-        self.is_cam = False
  
     def clone(self):
-        cl = Ani(self.fnlst, self.tS, self.tE,
+        cl = Ani(self.kind, self.tS, self.tE,
                 self.cycles,self.frames_per_cell)
-        cl.is_cam = self.is_cam
         for p in self.path:
             cl.path.append(p.clone())
+        if self.kind == 'spr':
+            cl.fnlst = self.fnlst[:]
+        elif self.kind == 'te':
+            cl.te = self.te.clone()
         return cl
 
     def serialize(self):
-        lst = []
-        lst.append(','.join(self.fnlst))
+        lst = [self.kind]
         lst.append('%.3f' % self.tS)
         lst.append('%.3f' % self.tE)
         lst.append('%.3f' % self.cycles)
         lst.append('%.3f' % self.frames_per_cell)
         for p in self.path:
             lst.append(p.serialize())
-        return  'ani' + ' '.join(lst)
+        return ' '.join(lst)
 
     @classmethod
     def unserialize(cls,src):
-        src = src[3:]
         lst = src.split(' ')
-        ani = Ani(
-            lst[0].split(','),
-            float(lst[1]),
-            float(lst[2]),
-            float(lst[3]),
-            float(lst[4]),
-            )
+        ani = Ani(*lst[0:5])
         i = 5
         while i<len(lst):
             ani.path.append(Pt.unserialize(lst[i]))
@@ -126,6 +114,7 @@ class Ani:
 
     def add_pt(self,pt):
         self.path.append(pt)
+        pt.ani = self
         self.set_path_params()
 
     def delete_pt(self,pt):
@@ -167,105 +156,102 @@ class Ani:
         return path[-1].clone()
 
 class TextEl:
-    def __init__(self,fontname,fontsize,fontcolor,bgspec='null'):
+    def __init__(self,fontname,fontsize,fontcolor,
+            bgspec='null',
+            w_txt = 0.0,
+            h_txt = 0.0,
+            w_bg = 0.0,
+            h_bg = 0.0,
+            yoff_bg = 0.0):
         self.fontname = fontname
         self.fontsize = fontsize
         self.fontcolor = fontcolor
         self.bgspec = bgspec
-        # Note: caller must explicitly set "text" attribute via
-        # "set_text"
-        self.text = ''
-        self.lo_text = Pt(0.0,0.0)
-        self.lo_bg = Pt(0.0,0.0)
+        self.w_txt = float(w_txt)
+        self.h_txt = float(h_txt)
+        self.w_bg = float(w_bg)
+        self.h_bg = float(h_bg)
+        self.yoff_bg = float(yoff_bg)
+        # use get_text and set_text for this value.
+        self._text = ''
+
+    def get_text(self):
+        return self._text
+
+    def set_text(self,text):
+        self._text = text
+        self.set_layout()
 
     def clone(self):
-        te = TextEl(
-            self.fontname,self.fontsize,self.fontcolor,
-            self.bgspec)
-        te.text = self.text
-        te.lo_text = self.lo_text.clone()
-        te.lo_bg = self.lo_bg.clone()
-        return te
+        cl = TextEl(
+            self.fontname,self.fontsize,self.fontcolor, self.bgspec,
+            self.w_txt, self.h_txt, self.w_bg, self.h_bg, self.yoff_bg)
+        cl._text = self._text
+        return cl
 
     def serialize(self):
-        s = '%s %s %s %s' % (
-            self.fontname, self.fontsize,self.fontcolor, self.bgspec)
-        s += ' %s' % self.lo_text.serialize()
-        s += ' %s' % self.lo_bg.serialize()
-        return 'txt%s\n%s' % (s,self.text.replace('\n','^'))
+        return '%s %s %s %s %.3f %.3f %.3f %.3f %.3f' % (
+            self.fontname, self.fontsize,self.fontcolor, self.bgspec,
+            self.w_txt, self.h_txt,
+            self.w_bg, self.h_bg, self.yoff_bg)
 
     @classmethod
     def unserialize(cls,src):
-        # 2-line serialization: line1 is element, line2 is content
-        lst = src[0][3:].split(' ')
-        te = TextEl( lst[0], lst[1], lst[2], lst[3])
-        te.lo_text = Pt.unserialize(lst[4])
-        te.lo_bg = Pt.unserialize(lst[5])
-        te.text = src[1].replace('^','\n')
-        return te
+        return TextEl(*src.split(' '))
 
-    def dump_lo(self):
-        # dev method
-        lo = self.lo_text
-        print( 'lo_text. x:%.2f y:%.2f w:%.2f h:%.2f' %
-            (lo.x,lo.y,lo.w,lo.h))
-        lo = self.lo_bg
-        print( 'lo_bg. x:%.2f y:%.2f w:%.2f h:%.2f' %
-            (lo.x,lo.y,lo.w,lo.h))
-
-    def do_layout(self,xc,yc):
-        # set layouts for text & bg: xc,yc are coords for text center
-        self.lo_text.move_to(xc,yc)
-        (w,h) = measure_text(self.text,self.fontname,self.fontsize)
-        self.lo_text.set_wh(w,h)
+    def set_layout(self):
+        # measure text
+        im = Image.new('RGB',(600,600))
+        draw = ImageDraw.Draw(im)
+        draw.text((0,0),self._text,fill=(255,255,255),
+                font=get_font(self.fontname,self.fontsize))
+        (x0,y0,x1,y1) = im.getbbox()
+        # we provide a margin so the bg is a bit larger 
+        # than the text.
         mar = 10
-        self.lo_bg.move_to(xc,yc)
-        self.lo_bg.set_wh(w + 2*mar, h + 2*mar)
+        (self.w_txt, self.h_txt) = (x1+1, y1+1) 
+        (self.w_bg, self.h_bg) = (
+            self.w_txt + 2*mar,
+            self.h_txt + 2*mar) 
+        self.yoff_bg = 0
 
-    def move_to(self,xc,yc):
-        xoff = self.lo_bg.x - self.lo_text.x
-        yoff = self.lo_bg.y - self.lo_text.y
-        self.lo_text.move_to(xc,yc)
-        self.lo_bg.move_to(xc+xoff,yc+yoff)
+    def get_bb_bg(self,xc,yc):
+        # given (x,y) of center, get bounding box for bg
+        w = int(self.w_bg/2)
+        h = int(self.h_bg/2)
+        yoff = int(self.yoff_bg)
+        return (xc-w, yc-h+yoff, xc+w, yc+h+yoff)
 
-    def set_text(self,text,xc,yc):
-        # set text & place center at (xc,yc)
-        self.text = text
-        self.do_layout(xc,yc)
+    def get_bb_text(self,xc,yc):
+        # given (x,y) of center, get bounding box for text
+        w = int(self.w_txt/2)
+        h = int(self.h_txt/2)
+        return (xc-w, yc-h, xc+w, yc+h)
 
 class Shot:
     # A shot is:
     # "tks" -- weight (number of ticks) for this shot.
-    # "cam" -- an Ani representing the camera (it's "fn" attribute gives 
-    #          the background image for the shot;
-    # "sprites" -- list of Ani objects for the sprites
-    # "textels" -- list of text elements. 
-    def __init__(self,tks,cam):
-        self.tks = tks
+    # "cam" -- an Ani representing the camera 
+    # "bgspec" -- bg spec for the shot. Either a color value ('#ff0000')
+    #             or a filename (minus file extension)
+    # "anis" -- list of Ani objects for the sprites & text
+    def __init__(self,tks,bgspec,cam=None):
+        self.tks = float(tks)
+        self.bgspec = bgspec
         self.cam = cam
-        cam.is_cam = True
-        self.sprites = []
-        self.textels = []
+        self.anis = []
 
     def clone(self):
-        sh = Shot(self.tks, self.cam.clone())
-        for e in self.sprites:
-            sh.sprites.append(e.clone())
-        for e in self.textels:
-            sh.textels.append(e.clone())
+        sh = Shot(self.tks, self.bgspec, self.cam.clone())
+        for e in self.anis:
+            sh.sprAnis.append(e.clone())
         return sh
 
     def has_bg_illo(self):
-        return not self.cam.fnlst[0].startswith('#')
-
-    def get_bgspec(self):
-        return self.cam.fnlst[0]
-
-    def set_bgspec(self,spec):
-        self.cam.fnlst[0] = spec
+        return not self.bgspec.startswith('#')
 
     def get_bg_pil(self):
-        bgspec = self.cam.fnlst[0]
+        bgspec = self.bgspec
         if bgspec.startswith('#'):
             return Image.new("RGB",(600,600),bgspec)
         else:
@@ -273,38 +259,31 @@ class Shot:
 
     def preload(self):
         if self.has_bg_illo():
-            ip.get(self.cam.fnlst[0],'')
-        for spr in self.sprites:
-            for fn in spr.fnlst:
-                ip.get(fn,'RGBA')
-        for te in self.textels:
-            get_font(te.fontname,te.fontsize)
+            ip.get(self.bgspec,'')
+        for ani in self.anis:
+            if (ani.kind == 'spr'):
+                for fn in ani.fnlst:
+                    ip.get(fn,'RGBA')
+            elif ani.kind == 'txt':
+                get_font(ani.te.fontname,ani.te.fontsize)
 
     def serialize(self):
-        terms = ['%.2f' % self.tks]
-        terms.append(self.cam.serialize())
-        for e in self.sprites:
-            terms.append(e.serialize())
-        for e in self.textels:
-            terms.append(e.serialize())
-        return '\n'.join(terms)
+        return '%.3f %s' % (self.tks,self.bgspec)
 
     @classmethod
-    def unserialize(cls,lines):
-        sh = Shot(
-            float(lines[0].strip()),
-            Ani.unserialize(lines[1].strip())
-            )
-        i = 2
-        while i < len(lines):
-            li = lines[i]
-            if li.startswith('ani'):
-                sh.sprites.append(Ani.unserialize(lines[i].strip()))
-                i += 1
-            elif li.startswith('txt'):
-                sh.textels.append(TextEl.unserialize(lines[i:i+2]))
-                i += 2
-        return sh
+    def unserialize(cls,src):
+        return Shot(*(src.split(' ')))
+
+    def partition_anis(self):
+        # split ani's into two sets, "spr" and "txt"
+        spr = []
+        txt = []
+        for a in self.anis:
+            if a.kind=='spr':
+                spr.append(a)
+            else:
+                txt.append(a)
+        return [spr,txt]
 
 class Script:
     def __init__(self):
@@ -315,22 +294,50 @@ class Script:
         return len(self.shots)
 
     def serialize(self):
-        lst = [proj_file_header]
-        lst.append('%f' % self.time)
+        lines = [proj_file_header]
+        lines.append('%f' % self.time)
         for s in self.shots:
-            lst.append(s.serialize())
-        return '\n\n'.join(lst)
+            lines.append(s.serialize())
+            lines.append(s.cam.serialize())
+            for ani in s.anis:
+                lines.append(ani.serialize())
+                if ani.kind == 'spr':
+                    lines.append(','.join(ani.fnlst))
+                elif ani.kind == 'txt':
+                    lines.append(ani.te.serialize())
+                    lines.append(ani.te._text.replace(' ','^'))
+            lines.append('')
+        return '\n'.join(lines)
 
     @classmethod
     def unserialize(cls,src):
+        lines = src.split('\n')
         s = Script()
-        blks = src.strip().split('\n\n')
-        # blks[0] gives version number: currently not used.
-        # blks[1] gives video time for the piece
-        s.time = float(blks[1])
+        # line0 is version: currently ignored
+        s.time = float(lines[1])
+        # remaining lines are shots, delimited by blank lines
         i = 2
-        while i < len(blks):
-            s.shots.append(Shot.unserialize(blks[i].split('\n')))
+        while i < len(lines) and lines[i].strip() != '':
+            sh = Shot.unserialize(lines[i])
+            s.shots.append(sh)
+            i += 1
+            # get camera
+            sh.cam = Ani.unserialize(lines[i])
+            i += 1
+            # get anis
+            while i < len(lines) and lines[i] != '':
+                ani = Ani.unserialize(lines[i])
+                i += 1
+                sh.anis.append(ani)
+                if ani.kind == 'txt':
+                    ani.te = TextEl.unserialize(lines[i])
+                    i += 1
+                    ani.te._text = lines[i].replace('^',' ')
+                    i += 1
+                elif ani.kind == 'spr':
+                    ani.fnlst = lines[i].split(',')
+                    i += 1
+            # skip blank line delim
             i += 1
         return s
 
@@ -343,6 +350,13 @@ script0_serialized = ''
 
 def script_open():
     return proj_dir != ''
+
+def close_project():
+    global script, proj_dir, proj_name, proj_filepath
+    script = Script()
+    proj_dir = ''
+    proj_name = ''
+    proj_filepath = ''
 
 def script_changed():
     global script0_serialized
@@ -367,7 +381,7 @@ def save_script(name):
         proj_filepath = '%s/%s' % (proj_dir,proj_name)
     with open(proj_filepath,'w') as f:
         f.write(script.serialize())
-        script0_serialized = script.serialize().strip()
+        script0_serialized = script.serialize()
 
 def open_project(d,name,create):
     global proj_dir,proj_name,proj_filepath,script,script0_serialized
@@ -385,12 +399,8 @@ def open_project(d,name,create):
         try:
             with open(proj_filepath,'r') as f:
                 src = f.read()
-                if not src.startswith('comiola ver'):
-                    msgbox.showerror('Comiola',
-                        '"%s" is not a Comiola project' % proj_filepath)
-                    return False
                 script = Script.unserialize(src)
-                script0_serialized = script.serialize().strip()
+                script0_serialized = script.serialize()
         except:
             msgbox.showerror('Comiola',
                 'Could not read "%s/%s"' % (d,name))
@@ -398,6 +408,13 @@ def open_project(d,name,create):
             return False
     ip.proj_dir = proj_dir
     return True
+
+def close_project():
+    global script, proj_dir, proj_name, proj_filepath
+    script = Script()
+    proj_dir = ''
+    proj_name = ''
+    proj_filepath = ''
 
 def extend_script(newshots,add_after):
     # rebuild the shot list, including the new shots
@@ -407,17 +424,15 @@ def extend_script(newshots,add_after):
     if add_after != -1:
         _shots = shots[0:add_after+1]
     _shots.extend(newshots)
-    if add_after + 1 < len(shots) -1:
+    if add_after + 1 < len(shots):
         _shots.extend(shots[add_after+1 : ])
     script.shots = _shots
 
 def add_shots(fnames,add_after,split,trim):
     imrecs = []
     for fn in fnames:
-        print(fn)
         (head,tail) = os.path.split(fn)
         root = tail.split('.')[0]
-        print(root)
         with open(fn,'rb') as fim:
             images.write_panels(fim,root,proj_dir,imrecs,
 {'w':600, 'h':600, 'split_pan':split, 'trim_mar':trim,'ext':'jpg'})
@@ -425,25 +440,20 @@ def add_shots(fnames,add_after,split,trim):
     for imr in imrecs:
         (fn,im_w,im_h) = imr
         cam_w = min(im_w,im_h)
-        cam = Ani([fn],0.0,1.0,1.0,4)
+        cam = Ani('cam',0.0,1.0,1.0,4)
         xc = int(im_w/2)
         yc = int(im_h/2)
         cam.path.append(Pt(xc,yc, 0.0, 0.0,0.0,cam_w,cam_w))
-        cam.is_cam = True
-        shots.append(Shot(10.0,cam))
-
-    for s in shots:
-        print('Wrote %s' % s.cam.fnlst[0])
+        shots.append(Shot(10.0,fn,cam))
 
     # rebuild the shot list, including the new shots
     extend_script(shots,add_after)
 
 def add_blank_shot(ixafter,color):
-    cam = Ani([color],0.0,1.0,1.0,4)
+    cam = Ani('cam',0.0,1.0,1.0,4)
     cam_w = 600
     cam.path.append(Pt(300, 300, 0.0, 0.0,0.0,cam_w,cam_w))
-    cam.is_cam = True
-    extend_script( [Shot(10.0,cam)], ixafter)
+    extend_script( [Shot(10.0,color,cam)], ixafter)
 
 def clone_shot(ix):
     extend_script([get_shot(ix).clone()],ix)
@@ -469,7 +479,6 @@ def install_sprite(fn):
     # write sprite to project dir as needed
     (head,tail) = os.path.split(fn)
     root = tail[:-4]
-    print(root)
     if head != proj_dir:
         with Image.open(fn).convert('RGBA') as src:
             src = images.reformat_image(300,300,src)
@@ -481,35 +490,16 @@ def install_sprite(fn):
         with Image.open(fpsrc).convert('RGBA') as src:
             ImageOps.mirror(src).save(fpmir,quality=95)
 
-def add_sprite(xc,yc,ixshot,fnlst):
-    ar = ip.get_ar(fnlst[0],'RGBA')
-    if ar <= 1.0:
-        w = 180
-        h = int(.5 + ar*w)
-    else:
-        h = 180
-        w = int(.5 + h/ar)
-    spr = Ani(fnlst,0.0,1.0,1.0,4)
-    spr.path.append(Pt(xc,yc,0.0, 0.0,0.0,w,h))
-    get_shot(ixshot).sprites.append(spr)
-    return spr
+def add_ani(kind,ixshot,te=None,fnlst=None):
+    ani = Ani(kind,0.0,1.0,1.0,4)
+    ani.te = te
+    ani.fnlst = fnlst
+    get_shot(ixshot).anis.append(ani)
+    return ani
 
-def delete_sprite(ixshot,spr):
+def delete_ani(ixshot,ani):
     s = get_shot(ixshot)
-    lst = []
-    for x in s.sprites:
-        if x != spr:
-            lst.append(x)
-    s.sprites = lst
-
-def add_te(xc,yc,ixshot,text,fontname,fontsize,color):
-    te = TextEl(fontname,fontsize,color)
-    te.set_text(text,xc,yc)
-    get_shot(ixshot).textels.append(te)
-    return te
-
-def delete_te(ixshot,te):
-    get_shot(ixshot).textels.remove(te)
+    s.anis.remove(ani)
 
 # text elements: we pool fonts
 font_pool = {}
@@ -521,20 +511,7 @@ def get_font(fontname,fontsize):
     if font is not None:
         return font
     fontsize = int( fontsize[:-2] )
-    #print('./res/%s.ttf' % fontname)
     font = ImageFont.truetype('./res/%s.ttf' % fontname,fontsize)
     font_pool[key] = font
     return font
-
-def measure_text(text,fontname,fontsize):
-    # get (w,h) for text
-    font = get_font(fontname,fontsize)
-    lines = text.split('\n')
-    w = 0
-    h = 0
-    for li in lines:
-        wx,hx = font.getsize(li)
-        h += hx
-        w = max(w,wx)
-    return (float(w),float(h))
 

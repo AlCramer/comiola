@@ -5,26 +5,30 @@ import imageio
 import images
 import io
 import math
+import webbrowser
 import imgpool as ip
-from scripts import get_shot
+import scripts
+from scripts import get_shot,get_font,cnt_shots
 
 # the display is global: this set in comiola.py
 display = None
 
 class AniState:
     # state of animation
-    def __init__(self,ixS,ixE,msecs_frame):
+    def __init__(self,ixS,ixE,msecs_frame,on_animate_fini):
         self.ixshot = ixS
         self.ixE = ixE
         self.msecs_frame = msecs_frame
+        self.on_animate_fini = on_animate_fini
         self.ixframe = 0
         self.img_pil = None
 
 def get_tween(ani,shot,ixframe):
     # return (z,fn,x0,y0,w,h) for a tween
 
-    # get parameter for "ixframe"; also fn for cell
-    fn = ani.fnlst[0]
+    # get parameter corresponding to "ixframe";
+    # also (if a sprite ani) fn for cell.
+    fn = ''
     param = 0.0
     if shot.nframes > 1:
         # ixfrmS: frame index at which animation starts
@@ -47,7 +51,7 @@ def get_tween(ani,shot,ixframe):
                 nfrmAni = ixfrmE - ixfrmS + 1
                 ix = ix % nfrmAni
                 param = ix / float(nfrmAni-1) 
-                if len(ani.fnlst) > 0:
+                if ani.kind == 'spr' and len(ani.fnlst) > 0:
                     ixcell = int(ix/ani.frames_per_cell)
                     ixcell = ixcell % len(ani.fnlst)
                     fn = ani.fnlst[ixcell]
@@ -74,12 +78,14 @@ def get_frame_pil(shot,ixframe):
     # the shot).
     img_dst = shot.get_bg_pil()
     # draw the sprites
+    [spr_anis,txt_anis] = shot.partition_anis()
+
     # "tween": (z,fn,x0,y0,w,h) for a sprite
     # We compute tween for each sprite, then sort by Z
     # and draw
     tweens = []
-    for spr in shot.sprites:
-        tweens.append(get_tween(spr,shot,ixframe))
+    for ani in spr_anis:
+        tweens.append(get_tween(ani,shot,ixframe))
     tweens.sort()
     for t in tweens:
         (z,fn,rot,x0,y0,w,h) = t
@@ -90,36 +96,33 @@ def get_frame_pil(shot,ixframe):
             img.close()
             img = _img
         img_dst.paste(img,(x0,y0),mask=img)
-        #img.close()
 
-    # draw text elements
+    # draw text elements (these have top Z-order, so we draw them
+    # after sprites). 
     draw_pil = ImageDraw.Draw(img_dst)
-    for te in shot.textels:
-        # bg
+    for ani in txt_anis:
+        # (x,y) for a text element is computed as a tween; other
+        # tween attributes are ignored.
+        (z,fn,rot,x,y,w,h) = get_tween(ani,shot,ixframe)
+        te = ani.te
+        # bg. 
+        (x0,y0,x1,y1) = te.get_bb_bg(x,y)
         if te.bgspec != 'null':
-            spec = te.bgspec
-            lo = te.lo_bg
-            (x,y,w,h) = (lo.x,lo.y,lo.w,lo.h)
-            if spec.startswith('#'):
-                (x0,y0,x1,y1) = (
-                    int(x-w/2), int(y-h/2),
-                    int(x+w/2), int(y+h/2))
-                draw_pil.rectangle((x0,y0,x1,y1),fill=spec)
+            bgspec = te.bgspec
+            if bgspec.startswith('#'):
+                draw_pil.rectangle((x0,y0,x1,y1), fill=bgspec)
             else:
-                (x,y,w,h) = ( int(x-w/2),int(y-h/2),int(w),int(h) )
-                img = ip.get_res(spec).resize(
-                    (w,h),Image.ANTIALIAS)
-                img = img.resize((w,h), Image.ANTIALIAS)
-                img_dst.paste(img,(x,y),mask=img)
+                img = ip.get_res(bgspec)
+                img = img.resize((int(te.w_bg),int(te.h_bg)),Image.ANTIALIAS)
+                img_dst.paste(img,(x0,y0),mask=img)
+                img.close()
         # text
-        font = get_font(te.fontname,te.fontsize)
-        lo = te.lo_text
-        (x,y,w,h) = (lo.x,lo.y,lo.w,lo.h)
-        (x,y) = ( int(x-w/2),int(y-h/2) )
-        draw_pil.text( (x,y),
-                te.text, fill=te.fontcolor, font=font) 
+        (x0,y0,x1,y1) = te.get_bb_text(x,y)
+        draw_pil.text( (x0,y0),
+                te.get_text(), fill=te.fontcolor, 
+                font=get_font(te.fontname,te.fontsize) )
 
-    # crop img_dst as per the bg animation and resize
+    # crop img_dst as per the camera animation and resize
     (z,fn,rot,x0,y0,w,h) = get_tween(shot.cam,shot,ixframe)
     cropped = img_dst.crop((x0, y0, x0+w-1, y0+h-1))
     img_pil = cropped.resize((608,608),Image.ANTIALIAS)
@@ -132,8 +135,7 @@ def animate_shot(state):
     # blit the pre-drawn frame
     display.can.delete('all')
     s.cam.im_tk = ImageTk.PhotoImage(state.img_pil)
-    display.can.create_image(display.xmar,display.ymar,
-            anchor=tk.NW,image=s.cam.im_tk)
+    display.can.create_image(20,20, anchor=tk.NW,image=s.cam.im_tk)
     state.img_pil.close()
     # set up for next shot
     if state.ixframe + 1 < s.nframes:
@@ -144,7 +146,7 @@ def animate_shot(state):
         state.ixframe = 0
         if state.ixshot == state.ixE:
             # done!
-            display.can.after(1, display.edit_shot, display.ixshot)
+            display.can.after(1, state.on_animate_fini)
             return
     # schedule the next frame
     display.can.after( state.msecs_frame, animate_shot, state)
@@ -169,14 +171,14 @@ def set_shot_nframes(fps, _time, ixS,ixE):
         total_actual += s.nframes
     return total_actual
 
-def animate_shots(ixS,ixE,_time):
+def animate_shots(ixS,ixE,_time,on_animate_fini):
     # animate shot sequence ixS..ixE
 
     # set number of frames for each shot
     fps = 24
     #fps = 48
     set_shot_nframes(fps, _time, ixS,ixE)
-    state = AniState(ixS,ixE, int( 1000/fps))
+    state = AniState(ixS,ixE, int( 1000/fps),on_animate_fini)
     # construct first frame
     s = get_shot(ixS)
     s.preload()
@@ -184,13 +186,28 @@ def animate_shots(ixS,ixE,_time):
     # kick off the animation
     animate_shot(state)
 
+
+html = \
+'''
+<!DOCTYPE html>
+<html>
+<body style='text-align:center;background-color:#454545' >
+<video width="608" height="608" controls>
+  <source src="__fn__.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+</body>
+</html>
+'''
 def make_mp4(status_msg):
     # set number of frames for each shot
     fps = 24
-    N = script.cnt_shots()
-    nframes = set_shot_nframes(fps, script.time, 0, N)
+    N = cnt_shots()
+    nframes = set_shot_nframes(fps, scripts.script.time, 0, N)
     cnt = 0
-    fp = '%s/%svideo.mp4' % (proj_dir,proj_name[:-5])
+    proj_dir = scripts.proj_dir
+    fnroot = scripts.proj_name[:-5]
+    fp = '%s/%s.mp4' % (proj_dir,fnroot)
     with imageio.get_writer(fp, fps = fps, mode='I') as writer:
         for i in range(0,N):
             s = get_shot(i)
@@ -211,7 +228,11 @@ def make_mp4(status_msg):
                     status_msg.update()
     status_msg['text'] = ''
     status_msg.update()
-    print('Done...')
+    fp = '%s/%s.htm' % (proj_dir,fnroot)
+    print('fp: %s' % fp)
+    with open(fp,"w") as f:
+        f.write(html.replace('__fn__',fnroot))
+    webbrowser.open_new_tab(fp)   
 
 def dev_test():
     # This devtest tests:

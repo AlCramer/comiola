@@ -2,6 +2,7 @@ import tkinter as tk
 import tkinter.filedialog
 import tkinter.messagebox as msgbox
 import os
+import webbrowser
 
 import scripts
 import controls
@@ -27,10 +28,11 @@ saveas_name = tk.StringVar()
 goto_label = None
 
 def validate_view():
-    on_buts = [on_file,new_project,open_project,on_file_cancel]
+    on_buts = [on_file,new_project,open_project,on_file_cancel,on_faq]
     if scripts.script_open():
         on_buts.append(save_project)
         on_buts.append(saveas_project)
+        on_buts.append(close_project)
     if scripts.cnt_shots() == 0:
         ixgoto.set('')
         goto_label.peer['text'] ='of 0'
@@ -108,6 +110,27 @@ def saveas_project():
     proj_dir.set(scripts.proj_filepath)
     set_fdd_visible(False)
 
+def close_project():
+    if not scripts.script_changed():
+        set_fdd_visible(False)
+        scripts.close_project()
+        display.validate_view()
+        return
+
+    action  = msgbox.askyesnocancel('Comiola','Save project?')
+    set_fdd_visible(False)
+    if action is None:
+        # user choose "Cancel"
+        return
+    if action:
+        # user choose "Yes" (save project)
+        if not do_commit():
+            # could not commit (bad values). Error was reported
+            return
+        scripts.save_script(scripts.proj_name)
+    scripts.close_project()
+    display.validate_view()
+
 # file button toggles visibility of file-dropdown, so we
 # must track state.
 fdd_visible = False
@@ -117,6 +140,11 @@ def on_file():
 
 def on_file_cancel():
     set_fdd_visible(False)
+
+def on_faq():
+    webbrowser.open_new_tab('%s/faq/faq.htm' %
+        os.path.abspath(os.path.dirname(__file__))
+    )
     
 # helpers for "make_gui"
 def make_banner(container):
@@ -131,7 +159,8 @@ def make_banner(container):
         Entry(ixgoto,4,[2,4]),
         goto_label,
         But('<',goto_prv,'banner',[4,4]),
-        But('>',goto_nxt,'banner',[4,4])
+        But('>',goto_nxt,'banner',[4,4]),
+        But('Help',on_faq,'banner',[16,4])
     ]
     build_row(container,terms)
 
@@ -152,6 +181,9 @@ def make_file_dropdown(container):
             But('Save as',saveas_project,'cntrls',[4,4]),
             Lab('Name:','cntrls',[4,1]),
             Entry(saveas_name,14,[1,4])
+        ],
+        [
+            But('Close',close_project,'cntrls',[4,4])
         ],
         [
             But('Cancel',on_file_cancel,'cntrls',[4,4])

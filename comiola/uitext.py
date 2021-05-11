@@ -2,8 +2,9 @@ import tkinter as tk
 import tkinter.messagebox as msgbox
 
 import scripts
+from scripts import TextEl,Pt
 import controls
-from controls import TextElCntrl 
+from controls import AniCntrl 
 from widgets import *
 from uicolors import *
 
@@ -20,20 +21,26 @@ fontsize = tk.StringVar()
 fontcolor = tk.StringVar()
 colorbg = tk.StringVar()
 
+def get_sel_te():
+    # get text-element for currently selected pt
+    if display.sel_ani is not None and display.sel_ani.kind == 'txt':
+        if display.sel_pt is not None:
+            return display.sel_ani.te
+
 def validate_view():
     enable_but(text_apply)
-    if display.sel_te is None:
+    te = get_sel_te()
+    if te is None:
         fontcolor.set('#000000')
         fontname.set('comics')
         fontsize.set('24pt')
         colorbg.set('')
         textbox.set('')
     else:
-        te = display.sel_te
         fontcolor.set(te.fontcolor)
         fontname.set(te.fontname)
         fontsize.set(te.fontsize)
-        textbox.set(te.text)
+        textbox.set(te.get_text())
         enable_but(delete_te)
 
 def do_commit():
@@ -43,20 +50,18 @@ def text_apply():
     if display.ixshot == -1:
         return
     text = textbox.get().strip()
-    if display.sel_te is None:
-        # create new te and select
-        te = scripts.add_te(
-            float(display.w_img/2),
-            float(display.h_img/2),
-            display.ixshot,
-            text,
-            fontname.get(),
-            fontsize.get(),
-            fontcolor.get())
-        TextElCntrl(te)
-        display.sel_ani = None
-        display.sel_pt = None
-        display.sel_te = te
+    te = get_sel_te()
+    if te is None:
+        if text == '':
+            return
+        # create a new txtAni and select
+        te = TextEl(fontname.get(),fontsize.get(),fontcolor.get())
+        te.set_text(text)
+        ani = scripts.add_ani('txt',display.ixshot,te=te)
+        pt = Pt( float(display.w_img/2), float(display.h_img/2))
+        ani.path.append(pt)
+        AniCntrl(ani,"text")
+        display.set_pt_selected(pt)
     else:
         # apply to selected
         color = fontcolor.get()
@@ -68,20 +73,21 @@ def text_apply():
                 msgbox.showerror('Comiola',
 '"Color" value must be an HTML-style hex color ("#ff000", etc.)')
                 return
-        te = display.sel_te
         te.fontname = fontname.get()
         te.fontsize = fontsize.get()
         te.fontcolor = color
-        te.set_text(text, te.lo_text.x, te.lo_text.y)
+        te.set_text(text)
     display.validate_view()
 
 def on_bal_select(fn):
-    if display.sel_te is not None:
-        display.sel_te.bgspec = fn
+    te = get_sel_te()
+    if te is not None:
+        te.bgspec = fn
         display.validate_view()
 
 def on_colorbg():
-    if display.sel_te is not None:
+    te = get_sel_te()
+    if te is not None:
         c = colorbg.get()
         # empty means: no bg; we record this as "null"
         if c == '':
@@ -90,14 +96,15 @@ def on_colorbg():
             msgbox.showerror('Comiola',
 '"Color" value must be an HTML-style hex color ("#ff000", etc.)')
             return
-        display.sel_te.bgspec = c
+        te.bgspec = c
         display.validate_view()
 
 
 def delete_te():
-    if display.sel_te is not None:
-        scripts.delete_te(display.ixshot,display.sel_te)
-        display.validate_view()
+    te = get_sel_te()
+    if te is not None:
+        scripts.delete_ani(display.ixshot,display.sel_ani)
+        display.deselect_all()
 
 def make_textcntrls(container):
     global textbox

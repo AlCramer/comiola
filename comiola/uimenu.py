@@ -40,6 +40,7 @@ def validate_view():
             enable_but(delete_pt)
             enable_but(on_z)
             enable_but(on_rot)
+            enable_but(on_track)
         if display.sel_pt is not None:
             ptZ.set('%.1f' % display.sel_pt.z)
             rot.set('%.1f' % display.sel_pt.rot)
@@ -85,23 +86,24 @@ def do_commit():
 
 def zoomin():
     display.scale_im_to_can += .1
+    display.xoff *= 1.1
+    display.yoff *= 1.1
     display.draw_edit()
 
 def zoomout():
     display.scale_im_to_can -= .1
+    display.xoff *= .9
+    display.yoff *= .9
     display.draw_edit()
 
 def clone_sprite():
     ani = display.sel_ani
-    if ani is None or ani == display.shot.cam:
+    if ani is None or ani.kind in ['cam','txt']:
         return
     # compute initial position: center of image
-    #xc = display.xmar + int(display.w_img/2)
-    #yc = display.ymar + int(display.h_img/2)
-    #spr = scripts.add_sprite(xc,yc,display.ixshot,ani.fnlst)
     cl = ani.clone()
     cl.xlate_path(25,0)
-    display.shot.sprites.append(cl)
+    display.shot.anis.append(cl)
     AniCntrl(cl,"sprite")
     display.validate_view()
 
@@ -144,6 +146,19 @@ def on_rot():
         msgbox.showerror('Comiola','"Rotate" value must be a number')
     display.validate_view()
 
+def on_track():
+    if display.sel_pt is None or display.sel_ani is None:
+        return
+    if not display.do_commit():
+        return
+    # pt must be the first animation point of the lock-ee
+    #if display.sel_pt != display.sel_ani.path[0]:
+        #msgbox.showerror('Comiola',
+            #"Selected point must be first point in animation path")
+        #return
+    display.first_sel_pt = display.sel_pt
+    display.action = "track"
+
 def make_menu(container):
     terms = [
         But('+',zoomin,'menu',[4,4]),
@@ -164,6 +179,7 @@ def make_menu(container):
         Entry( ptZ,4,[2,4]),
         But('Rot:',on_rot,'menu',[4,2]),
         Entry( rot,4,[2,4]),
+        But('Track',on_track,'menu',[4,2]),
     ]
     build_row(container,terms)
 
