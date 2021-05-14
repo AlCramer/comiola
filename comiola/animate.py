@@ -89,7 +89,6 @@ def get_frame_pil(shot,ixframe):
     tweens.sort()
     for t in tweens:
         (z,fn,rot,x0,y0,w,h) = t
-        #print('debug tween. x0: %d y0:%d w:%d h:%d' % (x0,y0,w,h))
         img = ip.get(fn,'RGBA').resize((w,h),Image.ANTIALIAS)
         if rot != 0.0:
             _img = img.rotate(rot)
@@ -212,7 +211,6 @@ def make_mp4(status_msg):
         for i in range(0,N):
             s = get_shot(i)
             s.preload()
-            #print('%d. nframes:%d' % (i,s.nframes))
             for j in range(0,s.nframes):
                 img_pil = get_frame_pil(s,j)
                 buf = io.BytesIO()
@@ -229,7 +227,6 @@ def make_mp4(status_msg):
     status_msg['text'] = ''
     status_msg.update()
     fp = '%s/%s.htm' % (proj_dir,fnroot)
-    print('fp: %s' % fp)
     with open(fp,"w") as f:
         f.write(html.replace('__fn__',fnroot))
     webbrowser.open_new_tab(fp)   

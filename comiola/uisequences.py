@@ -1,6 +1,5 @@
 import tkinter as tk
 import tkinter.messagebox as msgbox
-import os
 
 import scripts
 from widgets import *

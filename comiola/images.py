@@ -1,9 +1,6 @@
 from PIL import Image, ImageDraw, ImageOps, ImageFont
-import sys
 import os
 import shutil
-import json
-import textwrap
 
 '''
 Panel creation: we accept an image, split as needed,
@@ -131,9 +128,6 @@ class Im:
         self.im_pil = Image.open(fn)
         (self.w,self.h) = self.im_pil.size
         self.pix = self.im_pil.convert('L').load()
-##        self.pix = ImageOps.equalize(
-##            self.im_pil.convert('L'), mask=None).load()
-        #print 'w:%d h:%d' % (self.w,self.h)
         
 MIN_PIX_FG = 10
 EPSILON = 20
@@ -146,7 +140,6 @@ def set_validity(regs):
         lo_dim = min(r.x1-r.x0, r.y1-r.y0)
         hi_dim = max(r.x1-r.x0, r.y1-r.y0)
         r.valid = lo_dim/float(hi_dim) > .2
-        #print(r.valid)
 
     
 def merge_regions(mode,regs):

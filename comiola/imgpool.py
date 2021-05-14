@@ -50,7 +50,10 @@ res_pool = {}
 def get_res(fn):
     img = res_pool.get(fn)
     if img is None:
-        img = Image.open('./res/%s.png' % fn).convert('RGBA')
+        fp = os.path.join(
+                os.path.dirname(os.path.realpath(__file__)),
+                'res', fn + '.png')
+        img = Image.open(fp).convert('RGBA')
         res_pool[fn] = img
     return img
 

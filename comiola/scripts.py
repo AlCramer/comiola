@@ -10,7 +10,7 @@ from images import Reg
 import imgpool as ip
 
 # header for comiola project file
-proj_file_header = 'comiola ver1.0.0'
+proj_file_header = 'comiola 0.1'
 
 # the display is global: this set in comiola.py
 display = None
@@ -511,7 +511,10 @@ def get_font(fontname,fontsize):
     if font is not None:
         return font
     fontsize = int( fontsize[:-2] )
-    font = ImageFont.truetype('./res/%s.ttf' % fontname,fontsize)
+    path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            "res", fontname + '.ttf')
+    font = ImageFont.truetype(path,fontsize)
     font_pool[key] = font
     return font
 

@@ -2,6 +2,10 @@ import tkinter as tk
 from PIL import Image, ImageTk
 from uicolors import *
 
+import os
+import sys
+sys.path.append(os.path.dirname(os.path.realpath(__file__)))
+
 # This file defines classes that represent basic widgets: button, entry, label,
 # etc. To add a row of widgets to a panel, create a list of But/Entry/Label 
 # objects, then call "build_row". To add a table, create a set of such rows
@@ -59,7 +63,8 @@ class ImgBut:
 
     def get_peer(self,parent):
         if self.peer is None:
-            im_pil = Image.open('./res/%s.png' % self.fn)
+            _dir = os.path.dirname(os.path.realpath(__file__))
+            im_pil = Image.open('%s/res/%s.png' % (_dir,self.fn))
             im_pil.thumbnail((48,48),Image.ANTIALIAS)
             im_tk = ImageTk.PhotoImage(im_pil)
             self.peer = tk.Button(parent, image=im_tk,command=self.cmd,

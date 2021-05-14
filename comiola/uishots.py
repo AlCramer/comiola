@@ -1,6 +1,5 @@
 import tkinter as tk
 import tkinter.messagebox as msgbox
-import os
 
 import scripts
 from scripts import Pt
@@ -161,7 +160,6 @@ def add_sprite():
     # write image to project dir as needed; get fn roots
     roots = []
     for fn in names:
-        print(fn)
         scripts.install_sprite(fn)
         (head,tail) = os.path.split(fn)
         roots.append(tail[:-4])

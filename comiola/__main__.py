@@ -4,6 +4,7 @@ import tkinter.messagebox as msgbox
 
 import os
 import sys
+sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 
 import scripts
 import controls
@@ -164,7 +165,7 @@ def make_gui(win):
 usage = \
 """
 usage:
-    python comiola.py [project_filepath_option]
+    python __main__.py [project_filepath_option]
 """
 
 def main():
@@ -173,7 +174,7 @@ def main():
         exit(1)
     make_gui(win)
     # start dev code. Comment out before checkin!
-    sys.argv.append('C:/Users/Al/projects/cp/MyProject.cprj')
+    #sys.argv.append('C:/Users/Al/projects/cp/MyProject.cprj')
     # end dev code
     if len(sys.argv) == 2:
         scripts.open_project(*os.path.split(sys.argv[1]), False)
