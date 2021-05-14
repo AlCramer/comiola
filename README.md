@@ -14,7 +14,7 @@ start button, then click "Run". Make sure the "Open:" box reads "cmd", then
 click OK. A command line window will open. To install Comiola, enter 
 these commands:
 
-py -m pip install imageio 
+py -m pip install imageio     
 py -m pip install comiola 
 
 To start Comiola, enter this command:
@@ -26,7 +26,7 @@ Python programs are run from the terminal.
 To install Comiola, open a terminal window and enter 
 these commands:
 
-python -m pip install imageio 
+python -m pip install imageio    
 python -m pip install comiola 
 
 To start Comiola, enter this command:
