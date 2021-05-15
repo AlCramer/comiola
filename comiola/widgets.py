@@ -3,8 +3,6 @@ from PIL import Image, ImageTk
 from uicolors import *
 
 import os
-import sys
-sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 
 # This file defines classes that represent basic widgets: button, entry, label,
 # etc. To add a row of widgets to a panel, create a list of But/Entry/Label 
@@ -63,8 +61,9 @@ class ImgBut:
 
     def get_peer(self,parent):
         if self.peer is None:
-            _dir = os.path.dirname(os.path.realpath(__file__))
-            im_pil = Image.open('%s/res/%s.png' % (_dir,self.fn))
+            fp = os.path.join( os.path.dirname(__file__),
+                'res', self.fn + '.png')
+            im_pil = Image.open(os.path.abspath(fp))
             im_pil.thumbnail((48,48),Image.ANTIALIAS)
             im_tk = ImageTk.PhotoImage(im_pil)
             self.peer = tk.Button(parent, image=im_tk,command=self.cmd,

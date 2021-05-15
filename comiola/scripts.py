@@ -511,10 +511,9 @@ def get_font(fontname,fontsize):
     if font is not None:
         return font
     fontsize = int( fontsize[:-2] )
-    path = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)),
-            "res", fontname + '.ttf')
-    font = ImageFont.truetype(path,fontsize)
+    path = os.path.join( os.path.dirname(__file__),
+        'res', fontname + '.ttf')
+    font = ImageFont.truetype(os.path.abspath(path),fontsize)
     font_pool[key] = font
     return font
 
