@@ -5,7 +5,7 @@ import scripts
 from scripts import Pt
 import controls
 import images
-import imgpool as ip
+import resources as res
 from controls import AniCntrl, PtCntrl, TxtPtCntrl
 from widgets import *
 from uicolors import *
@@ -169,7 +169,7 @@ def add_sprite():
     xc = display.xoff + int(display.w_img/2)
     yc = display.yoff + int(display.h_img/2)
     # Must compute w,h attributes
-    ar = ip.get_ar(roots[0],'RGBA')
+    ar = res.get_img_ar(roots[0],'RGBA')
     if ar <= 1.0:
         w = 180
         h = int(.5 + ar*w)

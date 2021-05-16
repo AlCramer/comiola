@@ -4,11 +4,11 @@ import tkinter.messagebox as msgbox
 
 import os
 import sys
-#sys.path.append(os.path.dirname(os.path.realpath(__file__)))
-sys.path.append(
-    os.path.abspath(os.path.dirname(__file__))
-)
-
+if getattr(sys, 'frozen', False):
+    app_path = os.path.dirname(sys.executable)
+elif __file__:
+    app_path = os.path.dirname(__file__)
+sys.path.append(app_path)
 
 import scripts
 import controls

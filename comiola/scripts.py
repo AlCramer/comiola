@@ -1,5 +1,5 @@
 import os
-from PIL import ImageTk,Image,ImageDraw,ImageFont,ImageOps
+from PIL import ImageTk,Image,ImageDraw,ImageOps
 import tkinter as tk
 import tkinter.messagebox as msgbox
 import imageio
@@ -7,7 +7,7 @@ import images
 import io
 import math
 from images import Reg
-import imgpool as ip
+import resources as res
 
 # header for comiola project file
 proj_file_header = 'comiola 0.1'
@@ -204,7 +204,7 @@ class TextEl:
         im = Image.new('RGB',(600,600))
         draw = ImageDraw.Draw(im)
         draw.text((0,0),self._text,fill=(255,255,255),
-                font=get_font(self.fontname,self.fontsize))
+                font=res.get_font(self.fontname,self.fontsize))
         (x0,y0,x1,y1) = im.getbbox()
         # we provide a margin so the bg is a bit larger 
         # than the text.
@@ -255,17 +255,17 @@ class Shot:
         if bgspec.startswith('#'):
             return Image.new("RGB",(600,600),bgspec)
         else:
-            return ip.get(bgspec,'').copy()
+            return res.get_img(bgspec,'').copy()
 
     def preload(self):
         if self.has_bg_illo():
-            ip.get(self.bgspec,'')
+            res.get_img(self.bgspec,'')
         for ani in self.anis:
             if (ani.kind == 'spr'):
                 for fn in ani.fnlst:
-                    ip.get(fn,'RGBA')
+                    res.get_img(fn,'RGBA')
             elif ani.kind == 'txt':
-                get_font(ani.te.fontname,ani.te.fontsize)
+                res.get_font(ani.te.fontname,ani.te.fontsize)
 
     def serialize(self):
         return '%.3f %s' % (self.tks,self.bgspec)
@@ -406,7 +406,7 @@ def open_project(d,name,create):
                 'Could not read "%s/%s"' % (d,name))
             proj_filepath = ''
             return False
-    ip.proj_dir = proj_dir
+    res.proj_dir = proj_dir
     return True
 
 def close_project():
@@ -500,20 +500,4 @@ def add_ani(kind,ixshot,te=None,fnlst=None):
 def delete_ani(ixshot,ani):
     s = get_shot(ixshot)
     s.anis.remove(ani)
-
-# text elements: we pool fonts
-font_pool = {}
-
-def get_font(fontname,fontsize):
-    # get font for a text element
-    key = fontname+fontsize
-    font =  font_pool.get(key) 
-    if font is not None:
-        return font
-    fontsize = int( fontsize[:-2] )
-    path = os.path.join( os.path.dirname(__file__),
-        'res', fontname + '.ttf')
-    font = ImageFont.truetype(os.path.abspath(path),fontsize)
-    font_pool[key] = font
-    return font
 

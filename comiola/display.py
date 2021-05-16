@@ -2,8 +2,8 @@ import tkinter as tk
 from PIL import ImageTk,Image,ImageDraw
 
 import scripts
-from scripts import Pt,Ani,get_font
-import imgpool as ip
+from scripts import Pt,Ani
+import resources as res
 from controls import *
 
 class Display:
@@ -184,7 +184,7 @@ class Display:
             if bgspec.startswith('#'):
                 draw_pil.rectangle((x0,y0,x1,y1), fill=bgspec)
             else:
-                img = ip.get_res(bgspec)
+                img = res.get_res(bgspec)
                 w = int(x1-x0+1)
                 h = int(y1-y0+1)
                 img = img.resize((w,h),Image.ANTIALIAS)
@@ -197,7 +197,7 @@ class Display:
             self.to_draw_coords(x0,y0),
             te.get_text(),
             fill=te.fontcolor,
-            font=get_font(te.fontname,te.fontsize))
+            font=res.get_font(te.fontname,te.fontsize))
 
     def draw_edit(self):
         self.can.delete("all")
@@ -219,7 +219,7 @@ class Display:
         # draw sprite images
         for ani in spr_anis:
             for pt in ani.path:
-                self.draw_spr(pt,ip.get(ani.fnlst[0],'RGBA'),img_dst)
+                self.draw_spr(pt,res.get_img(ani.fnlst[0],'RGBA'),img_dst)
         # draw text-element bg images.
         draw_pil = ImageDraw.Draw(img_dst)
         for ani in txt_anis:
@@ -263,10 +263,10 @@ class Display:
             AniCntrl(self.shot.cam,"cam")
             for ani in self.shot.anis:
                 AniCntrl(ani,"sprite")
-        ip.clear_refs()
+        res.clear_refs()
         self.tabcntrl.show_tab('Shots')
         self.validate_view()
-        ip.close_unneeded()
+        res.close_unneeded()
 
     def sprite_selected(self):
         return (self.sel_ani is not None and

@@ -6,9 +6,9 @@ import images
 import io
 import math
 import webbrowser
-import imgpool as ip
+import resources as res
 import scripts
-from scripts import get_shot,get_font,cnt_shots
+from scripts import get_shot,cnt_shots
 
 # the display is global: this set in comiola.py
 display = None
@@ -89,7 +89,7 @@ def get_frame_pil(shot,ixframe):
     tweens.sort()
     for t in tweens:
         (z,fn,rot,x0,y0,w,h) = t
-        img = ip.get(fn,'RGBA').resize((w,h),Image.ANTIALIAS)
+        img = res.get_img(fn,'RGBA').resize((w,h),Image.ANTIALIAS)
         if rot != 0.0:
             _img = img.rotate(rot)
             img.close()
@@ -111,7 +111,7 @@ def get_frame_pil(shot,ixframe):
             if bgspec.startswith('#'):
                 draw_pil.rectangle((x0,y0,x1,y1), fill=bgspec)
             else:
-                img = ip.get_res(bgspec)
+                img = res.get_res(bgspec)
                 img = img.resize((int(te.w_bg),int(te.h_bg)),Image.ANTIALIAS)
                 img_dst.paste(img,(x0,y0),mask=img)
                 img.close()
@@ -119,7 +119,7 @@ def get_frame_pil(shot,ixframe):
         (x0,y0,x1,y1) = te.get_bb_text(x,y)
         draw_pil.text( (x0,y0),
                 te.get_text(), fill=te.fontcolor, 
-                font=get_font(te.fontname,te.fontsize) )
+                font=res.get_font(te.fontname,te.fontsize) )
 
     # crop img_dst as per the camera animation and resize
     (z,fn,rot,x0,y0,w,h) = get_tween(shot.cam,shot,ixframe)

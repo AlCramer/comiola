@@ -1,7 +1,6 @@
 from PIL import ImageDraw
 import tkinter.messagebox as msgbox
-from scripts import Pt,get_font
-import imgpool as ip
+from scripts import Pt
 
 # the display is global: this set in comiola.py
 display = None
