@@ -16,14 +16,15 @@ setup(
     author="Al Cramer",
     author_email="ac2.71828@gmail.com",
     license="MIT",
+    keywords='animation video comics',
     classifiers=[
         "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
     ],
     packages=["comiola"],
     include_package_data=True,
-    install_requires=["Pillow", "imageio"],
+    install_requires=["Pillow", "imageio", "imageio-ffmpeg"],
 )
 

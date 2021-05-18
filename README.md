@@ -25,6 +25,7 @@ To install Comiola, open a terminal window and enter
 these commands:
 
 python -m pip install imageio    
+python -m pip install imageio-ffmpeg    
 python -m pip install comiola 
 
 To start Comiola, enter this command:
