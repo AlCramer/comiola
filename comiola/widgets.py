@@ -1,6 +1,7 @@
 import tkinter as tk
 from PIL import Image, ImageTk
 from uicolors import *
+import resources
 
 import os
 
@@ -61,9 +62,9 @@ class ImgBut:
 
     def get_peer(self,parent):
         if self.peer is None:
-            fp = os.path.join( os.path.dirname(__file__),
-                'res', self.fn + '.png')
-            im_pil = Image.open(os.path.abspath(fp))
+            fp = os.path.join(
+                resources.get_assets_dir('res'), self.fn+'.png')
+            im_pil = Image.open(fp)
             im_pil.thumbnail((48,48),Image.ANTIALIAS)
             im_tk = ImageTk.PhotoImage(im_pil)
             self.peer = tk.Button(parent, image=im_tk,command=self.cmd,

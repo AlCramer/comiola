@@ -9,8 +9,11 @@ import math
 from images import Reg
 import resources as res
 
+# version number
+version = '0.1'
+
 # header for comiola project file
-proj_file_header = 'comiola 0.1'
+proj_file_header = 'comiola %s' % version
 
 # the display is global: this set in comiola.py
 display = None

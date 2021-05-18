@@ -35,7 +35,7 @@ def get_img(fn,mode):
             #print('reusing %s' % fn)
             return ir.img
     ext = 'png' if mode == 'RGBA' else 'jpg'
-    img = Image.open('%s/%s.%s' % (proj_dir,fn,ext))
+    img = Image.open( os.path.join(proj_dir,'%s.%s' % (fn,ext)) )
     if mode != '':
         _img = img.convert(mode)
         img.close()
@@ -44,16 +44,22 @@ def get_img(fn,mode):
     return img
 
 def get_img_ar(fn,mode):
-    (w,h) = get(fn,mode).size
+    (w,h) = get_img(fn,mode).size
     return float(h)/w
+
+def get_assets_dir(kind):
+    # "kind" is either "res" or "faq"
+    if getattr(sys, 'frozen', False):
+        return kind
+    elif __file__:
+        app_path = os.path.dirname(__file__)
+        return os.path.join(app_path,kind)
 
 res_pool = {}
 def get_res(fn):
     img = res_pool.get(fn)
     if img is None:
-        fp = os.path.join( os.path.dirname(__file__),
-                'res', fn + '.png')
-        fp = os.path.abspath(fp)
+        fp = os.path.join( get_assets_dir('res'), fn+'.png')
         img = Image.open(fp).convert('RGBA')
         res_pool[fn] = img
     return img
@@ -68,9 +74,8 @@ def get_font(fontname,fontsize):
     if font is not None:
         return font
     fontsize = int( fontsize[:-2] )
-    path = os.path.join( os.path.dirname(__file__),
-        'res', fontname + '.ttf')
-    font = ImageFont.truetype(os.path.abspath(path),fontsize)
+    path = os.path.join( get_assets_dir('res'), fontname + '.ttf')
+    font = ImageFont.truetype(path,fontsize)
     font_pool[key] = font
     return font
 

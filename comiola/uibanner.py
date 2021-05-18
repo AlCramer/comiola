@@ -9,6 +9,7 @@ import controls
 from controls import AniCntrl 
 from widgets import *
 from uicolors import *
+import resources
 
 # the display
 display = None
@@ -143,9 +144,9 @@ def on_file_cancel():
 
 def on_faq():
     webbrowser.open_new_tab(
-        os.path.join( os.path.dirname(__file__),
-        'faq', 'faq.htm')
+        os.path.join(resources.get_assets_dir('faq'),'faq.htm') 
     )
+   
     
 # helpers for "make_gui"
 def make_banner(container):
