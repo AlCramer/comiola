@@ -97,6 +97,31 @@ comiola help
 </div>
 
 <div class="index">
+<a href="#howaddshot">How do I add/delete a shot? </a>
+</div>
+
+<div class="index">
+<a href="#howsetcam">How do I set/animate the camera? </a>
+</div>
+
+<div class="index">
+<a href="#howaddsprite">How do I add/animate a sprite? </a>
+</div>
+
+<div class="index">
+<a href="#howtracking">How do I set up a tracking shot? </a>
+</div>
+
+<div class="index">
+<a href="#howzorder">How do I place one sprite move in front of another? </a>
+</div>
+
+<div class="index">
+<a href="#howtext">How do I add text and word balloons to a shot? </a>
+</div>
+
+
+<div class="index">
 <a href="#shotlength">How do I set the length of a shot?</a>
 </div>
 
@@ -601,6 +626,217 @@ What kinds of image files can I use?
 For background images, you can use either PNG or JPG files. For sprites, 
 you must use PNG files with transparent backgrounds.
 
+<div id="howaddshot" class="entry">
+<div class="entrytitle">
+How do I add/delete a shot?
+</div>
+<p> 
+Open the Shots tab in the right control panel, then click Add Shots.
+<p>
+<img src="addshots.jpg">
+</p>
+In the File Select dialog, select the image file containing your artwork.
+This can be either a JPG or a PNG file.
+<p>
+Tip#1: If your artwork is a multi-panel comic, enable the
+"split" checkbox before clicking Add Shots. This will split 
+(say) a 4 panel comic into a sequence of 4 shots, 1 shot per
+panel. (But it only works if the panels are seperated by straight,
+empty gutters).
+<p>
+Tip#2: If your artwork is not multipanel, but is surrounded by
+empty white space, enable the "trim" checkbox to trim the
+empty margins.
+
+<p>
+A second way to add a shot is to click "Clone Shot". This
+adds a copy of the current shot. You can then reset the
+camera so it shows a different part of the image.
+
+<p>
+To delete a shot, click the Cut/Paste tab of the right 
+control panel.
+
+<div id="howsetcam" class="entry">
+<div class="entrytitle">
+How do I set/animate the camera?
+</div>
+<p> 
+When you add a shot, Comiola takes you to the new shot.
+It will look like this:
+<p>
+<img src="newshot.jpg">
+</p>
+The small green square in the center of the image shows
+where the camera is pointing. The large green outline
+surrounding it shows the camera view. Clicking the small
+green square selects the camera for editing: it turns into a
+circle to show the camera has been selected. A small green
+triangle will appear on the right edge of the camera view:
+click and drag on the triangle to resize the camera view.
+Click and drag on the small green square to move the camera.
+<p>
+To animate the camera, first move/resize the camera
+to setup for the start of the animation. This will be the
+starting point for the animation. Then click "Pt: Add" in the top
+control panel.
+<p>
+<img src="ptadd.jpg">
+</p>
+This will be the ending point for the animation: resize/move it
+so it's correct for the final view in the animation.
+
+<p>
+Tip: if the second point of the camera animation is left or
+right of the first point, you've created a pan. If the second
+point contains the first point, you've created a zooom-out.
+When you position/resize the second point, you can combine
+both pan and zoom to get the effect you're after.
+
+<div id="howsaddsprite" class="entry">
+<div class="entrytitle">
+How do I add/animate a sprite?
+</div>
+<p> 
+In the Shots tab in the right panel, click Add Sprite.
+<p>
+<img src="addsprites.jpg">
+</p>
+Select one or more images from the File Open dialog box.
+<p>
+Comiola supports two kinds of animation: path and cell. In path
+animation, the same image is used for the sprite as it moves
+around on the screen (though it can shrink or grow, depending on
+how you're set up the path). In cell animation, mutiple images 
+are shown for the sprite: Comiola cycles through the set,
+showing the first one for (say) 2 frames, advancing to the second 
+for another 2 frames, etc. To get cell animation, select multiple
+files from the File Open dialog box.
+<p>
+Image files for sprites must be PNG files, with transparent backgrounds.
+<p>
+In this shot:
+<p>
+<img src="howaddsprite.jpg">
+</p>
+we've added a sprite ("Alice"). To select a sprite, click on the small
+red square in the center (it turns into a circle, to show that 
+the sprite was selected). Click and drag to move the sprite. To resize 
+the sprite, click and drag the red triangle
+to the right of the square. 
+<p>
+To animate a sprite, move and resize it so that it's where it should
+at the beginning of the animation. Make sure it's selected, then
+click Pt: Add in the top control panel.
+<p>
+<img src="ptadd.jpg">
+</p>
+This adds a second point to the animation path. Move and resize it so 
+it's where it should be at the end of the animation. In this shot
+<p>
+<img src="aliceani.jpg">
+</p>
+we've defined a simple 2 point path for Alice. When the shot plays,
+she'll stroll across the screen. (Notice there's a second sprite in
+this shot, a small tree. Since there's only one point in it's
+animation path, it will stay where it is when the shot is played).
+
+<div id="howtracking" class="entry">
+<div class="entrytitle">
+How do I set up a tracking shot?
+</div>
+<p> 
+In a tracking shot, the camera follows a sprite as it moves.
+So the first step is to add a sprite and define an animation
+path for it. In this example
+<p>
+<img src="aliceani.jpg">
+</p>
+we created a simple 2 point animation for Alice. The first point is
+at lower right, and the second point is at lower left.
+<p>
+The next step is to move and resize the camera so that it frames
+Alice at the first point. 
+<p>
+<img src="aliceani2.jpg">
+</p>
+The last step is to actually create the tracking. Click the small green
+square to select the camera. Then, in the top control panel, click Track.
+<p>
+<img src="track.jpg">
+</p>
+Finally click the small red square, thus selecting the sprite which
+is to be tracked by the camera. You will see that a second point has
+been added to the camera's animation path, and that this second point
+frames Alice in just the way the first point did. This means that camera
+will follow Alice as she moves across the screen.
+<p>
+If you want the camera to zoom in or out as Alice travels across
+the screen, just resize the second point in the camera's animation
+path.
+<p>
+Tip1: If you change Alice's path, you'll have to re-do the steps 
+you took to set up tracking (changing Alice's path will not
+automatically change the camera path).
+<p>
+Tip2: Tracking isn't restricted to the camera. If you want sprite A
+to follow sprite B, just select sprite A, click Track on the top 
+control panel, then select sprite B.
+
+<div id="howzorder" class="entry">
+<div class="entrytitle">
+How do I place one sprite in front of another?
+</div>
+<p> 
+You need to change the "Z-order" of the sprites.
+Sprites with higher Z appear in front of sprites
+with lower Z. By default, all sprites (animation path points) are assigned
+a Z value of 0. Suppose you want sprite A to be in front of sprite B.
+Select sprite B,
+then find the "setZ:" button in the top control
+panel:
+
+<p>
+<img src="setz.jpg">
+</p>
+
+Change the value to -1, then click the "setZ" button. 
+
+
+<div id="howtext" class="entry">
+<div class="entrytitle">
+How do I add text and word balloons to a shot?
+</div>
+<p> 
+Click the Text tab in the right control panel to bring up
+the text control.
+<p>
+<img src="textcntrl.jpg">
+</p>
+
+Enter some text, then click Apply. A text sprite will be added
+to the shot. Click on an appropriate balloon in the control panel
+to surround the text with a balloon.
+<p>
+<img src="text2.jpg">
+</p>
+
+A text sprite has 3 handles. Click/drag the square in the center to
+move the text. (In the picture above, the square has turned into a 
+circle to show the text has been selected). Click/drag the triangle 
+in the lower right corner to
+resize the balloon. Click/drag the triangle at center to move the
+balloon up or down, relative to the text.
+
+<p>
+In the right control panel, notice that there is an empty rectangle
+below the balloons.  If you specify an html-style hex color code
+("#FF0000") in the box labeled "Color:", then click the rectangle,
+any balloon will be replaced with a rectangular colored background.
+If you leave the Color box blank, the background will be invisible
+(so if you've put a balloon around the text and want to erase it,
+just clear any value in the Color box and click the rectangle).
+
 <div id="shotlength" class="entry">
 <div class="entrytitle">
 How do I set the length of a shot?
@@ -651,7 +887,7 @@ to (say) ".75". That means: time the animation so that it's complete,
 
 <div id="reps" class="entry">
 <div class="entrytitle">
-How do I make an animation repeat itself (loop)?
+	How do I make an animation repeat itself (loop)?
 </div>
 <p> 
 Suppose you want to make an animation repeat itself 3 times. There
