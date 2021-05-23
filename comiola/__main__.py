@@ -22,6 +22,7 @@ from uicolors import *
 # components
 win = tk.Tk()
 win.title('Comiola')
+win.iconbitmap("comiola.ico")
 
 # ui components
 import uibanner

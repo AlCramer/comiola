@@ -1,19 +1,15 @@
 # README #
 
-COMIOLA is a 2D animation tool for turning comics and other graphic art
+COMIOLA is a animation tool for turning comics and other graphic art
 into .mp4 videos.
 
 ### Installation ###
 
 #### Windows 10 ####
-1. Create a folder in which to install Comiola.
-
-2. Download "comiola.zip" from this site. Click the zip file, and click
-"Extract all". In the "Extract All" Dialog box, select the folder you
-created in Step1. Comiola is now installed.
-
-3. To run Comiola, go to the folder created in Step1 and double-click
-on "comiola".  
+Click [here](https://drive.google.com/file/d/1YgTZp8Nq8WLeIFe_my64_ED-JB5iXzb7/view?usp=sharing) to download the installer for Comiola.
+It will be named "comiola_winX.X", where "X.X" is the version
+number. When the download is complete, double click the downloaded file
+to install Comiola. 
 
 #### Mac, Linux ####
 Comiola is written in Python, so you must have Python 3 installed
@@ -31,6 +27,20 @@ python -m pip install comiola
 To start Comiola, enter this command:
 
 python -m comiola.py 
+
+#### Dev Notes: Windows Installer ####
+We use "pyinstaller" to create a standalone app for Windows,
+and "Inno Setup"  
+([download here](https://inno-setup.en.uptodown.com/windows)
+to create the installer program. Steps are:
+
+1. From root directory of the distribution, run "run_pyinstaller.bat".
+That will run pyinstaller with correct options.
+
+2. Again from root directory, double click the Inno Setup script 
+"innosetup.iss". That will bring up Inno Setup. From top menu,
+select Build/Compile. That will create the installer in 
+"Output/comiola_win0.1.exe". 
 
 
 ### Who do I talk to? ###
